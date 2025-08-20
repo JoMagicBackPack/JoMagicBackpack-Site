@@ -34,3 +34,38 @@ h1 {
 .store-link:hover {
     text-decoration: underline;
 }
+/* Header Logo */
+.site-header {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.site-logo {
+  max-width: 220px;   /* adjust size of your logo */
+  height: auto;
+}
+
+/* Mission statement */
+.mission {
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 15px 0;
+  color: #ccc; /* adjust if you want */
+}
+
+/* Navigation links */
+.nav-links {
+  text-align: center;
+  margin: 10px 0 30px 0;
+}
+
+.nav-links a {
+  margin: 0 15px;
+  text-decoration: none;
+  font-weight: bold;
+  color: #66ccff; /* same palette as logo */
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
