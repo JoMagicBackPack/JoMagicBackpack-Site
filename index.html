@@ -51,7 +51,7 @@
     .hr{height:1px; background:linear-gradient(90deg,transparent,var(--stroke),transparent); margin:14px 0}
     footer{margin-top:16px; color:var(--muted); font-size:12px; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap}
 
-    /* ========= Feedback carousel (mobile-first, no stars) ========= */
+    /* ========= Feedback carousel (mobile-first, no stars, auto-resize) ========= */
     #ebay-feedback{padding:2.5rem 1rem}
     #ebay-feedback .jf-wrap{max-width:1000px; margin:0 auto}
     .jf-head{display:grid; gap:.25rem 1rem; align-items:end; margin-bottom:1rem}
@@ -66,11 +66,11 @@
     .jf-viewport{position:relative}
     .jf-track{
       list-style:none; margin:0; padding:0; position:relative; overflow:hidden;
-      /* Fallback height so iOS Chrome/Safari renders slides before JS runs */
-      min-height: clamp(180px, 38vw, 360px);
+      /* Height is controlled by JS and animates up/down per slide */
+      height:auto; transition:height .28s ease;
     }
-    .jf-slide{position:absolute; inset:0; transform:translateX(100%); transition:transform .4s ease}
-    .jf-slide:first-child{transform:translateX(0)} /* ensure first review visible even without JS */
+    .jf-slide{position:absolute; inset:0; transform:translateX(100%); transition:transform .35s ease}
+    .jf-slide:first-child{transform:translateX(0)} /* CSS fallback so the first review shows even before JS */
 
     .jf-card{
       width:100%; max-width:780px; margin:0 auto;
@@ -78,7 +78,7 @@
       border-radius:16px; padding:clamp(14px,3.5vw,24px); display:grid; gap:.75rem;
       box-shadow:0 8px 24px rgba(0,0,0,.06);
     }
-    .jf-quote{margin:0; font-size:clamp(1rem,4.5vw,1.6rem); line-height:1.45}
+    .jf-quote{margin:0; font-size:clamp(1rem,4.5vw,1.6rem); line-height:1.5; word-break:break-word}
     .jf-meta{margin:0; font-size:clamp(.9rem,3.2vw,1rem); color:var(--muted)}
 
     .jf-controls{display:grid; grid-template-columns:2.75rem 1fr 2.75rem; align-items:center; gap:.5rem; margin-top:.75rem}
@@ -171,7 +171,7 @@
             </li>
             <li class="jf-slide">
               <figure class="jf-card">
-                <blockquote class="jf-quote">“Fantastic communication and item just as expected. Thank you for offering a level of customer contact that was unexpected and appreciated. 100% satisfied!”</blockquote>
+                <blockquote class="jf-quote">“I rarely leave feedback until I’m rated as a buyer. You must do something that delivers value to my experience and this seller did just that. Fantastic communication and item just as expected. Thank you for offering a level of customer contact that was unexpected and appreciated. 100% satisfied!”</blockquote>
                 <figcaption class="jf-meta">- bennettangels3 (911) · Past year</figcaption>
               </figure>
             </li>
@@ -216,11 +216,15 @@
           });
           const dots = Array.from(dotsWrap.children);
 
-          // Fit track height to active slide (simple, mobile-friendly)
+          // Utility: animate the track height to match the active slide
           function fitHeight() {
             const active = slides[index];
             if (!active) return;
-            track.style.height = active.offsetHeight + 'px';
+            const target = active.scrollHeight; // reliable even when translated
+            const start = track.clientHeight;
+            if (Math.abs(target - start) < 1) { track.style.height = target + 'px'; return; }
+            // rAF to ensure smooth transition
+            requestAnimationFrame(() => { track.style.height = target + 'px'; });
           }
 
           // Show one slide
@@ -237,10 +241,11 @@
           const nextSlide = () => show(index+1);
           const prevSlide = () => show(index-1);
 
-          // Init: ensure first is visible + set initial height
+          // Init: put all slides right, first at 0; set initial height
           slides.forEach(li => li.style.transform = 'translateX(100%)');
           if (slides[0]) slides[0].style.transform = 'translateX(0)';
-          fitHeight();
+          // Wait a tick so fonts/layout settle, then measure
+          requestAnimationFrame(fitHeight);
 
           // Controls
           prev.addEventListener('click', prevSlide);
@@ -256,8 +261,8 @@
           viewport.addEventListener('focusin', stop);
           viewport.addEventListener('focusout', start);
 
-          // Refit on rotate/resize
-          window.addEventListener('resize', fitHeight, {passive:true});
+          // Refit on rotate/resize (iOS Chrome/Safari)
+          window.addEventListener('resize', () => requestAnimationFrame(fitHeight), {passive:true});
 
           start();
         })();
