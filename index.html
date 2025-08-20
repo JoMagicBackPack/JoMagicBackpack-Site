@@ -1,24 +1,120 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Jo'MagicBackpack</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jo’Magic Backpack</title>
+  <meta name="description" content="Jo’Magic Backpack — a menagerie of vintage + new finds. Curious, artsy, a little mysterious." />
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+  <style>
+    :root {
+      --bg: #0e0f12; --card:#15171c; --text:#f4f6f8; --muted:#b7bec7; --accent:#8bd3ff;
+      --btn:#1e2128; --btnHover:#272b33; --ring:#2a95ff55;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: radial-gradient(1200px 800px at 70% -10%, #1b1f27 0%, var(--bg) 60%);
+      color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      display: grid; place-items: center; padding: 24px;
+    }
+    .wrap {
+      width: 100%; max-width: 860px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid #222631; border-radius: 16px; padding: 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    header { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+    .logo {
+      width: 72px; height: 72px; border-radius: 12px; overflow: hidden; background: #0b0d11;
+      display: grid; place-items: center; border: 1px solid #232734;
+    }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    .title { line-height: 1.15; }
+    h1 { font-size: clamp(22px, 3.2vw, 34px); margin: 0; letter-spacing: 0.2px; }
+    .tag { color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .btns {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px; margin-top: 18px;
+    }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 16px; background: var(--btn); color: var(--text); text-decoration: none; border-radius: 12px;
+      border: 1px solid #2a2f3a; transition: all .15s ease; position: relative;
+    }
+    .btn:hover { background: var(--btnHover); transform: translateY(-1px); }
+    .btn:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+    .btn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+    .card {
+      margin-top: 18px; padding: 16px; background: var(--card); border: 1px solid #232734; border-radius: 12px;
+    }
+    .about { color: var(--muted); font-size: 15px; line-height: 1.6; }
+    footer { margin-top: 16px; color: #8b93a1; font-size: 12px; display:flex; justify-content: space-between; gap:8px; flex-wrap:wrap;}
+    code { background:#0f1218; padding:2px 6px; border-radius:6px; border:1px solid #232734; }
+    /* Optional subtle divider */
+    .hr { height:1px; background: linear-gradient(90deg, transparent, #2a2f3a, transparent); margin: 14px 0; }
+  </style>
 </head>
 <body>
+  <main class="wrap">
     <header>
-        <img src="images/logo.png" alt="Jo'MagicBackpack Logo" class="logo">
-        <h1>Jo'MagicBackpack</h1>
+      <div class="logo">
+        <!-- Replace with your actual logo image: /assets/logo.png -->
+        <!-- Fallback: simple glyph -->
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 9a5 5 0 0 1 10 0" stroke="#8bd3ff" stroke-width="1.5" />
+          <rect x="4" y="9" width="16" height="10" rx="2" stroke="#c7d2e3" stroke-width="1.3"/>
+          <path d="M4 12h16" stroke="#2aa8ff" stroke-width="1.1"/>
+          <path d="M9 18c1.5-1 4.5-1 6 0" stroke="#8bd3ff" stroke-width="1.1"/>
+        </svg>
+      </div>
+      <div class="title">
+        <h1>Jo’Magic Backpack</h1>
+        <div class="tag">Artsy • mysterious • inquisitive • funny — a menagerie of finds.</div>
+      </div>
     </header>
-    <main>
-        <section class="quote-carousel">
-            <blockquote id="quote">“Curiosity packed, wonder unpacked.”</blockquote>
-        </section>
-        <section class="intro">
-            <p>A menagerie of finds, both vintage and new. No algorithms, just instinct.</p>
-            <a href="https://www.ebay.com/str/jomagicbackpack" class="store-link" target="_blank">Visit my eBay Store</a>
-        </section>
-    </main>
-    <script src="scripts.js"></script>
+
+    <div class="btns">
+      <!-- Use clean, human-friendly link text -->
+      <a class="btn" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">
+        <span class="dot" aria-hidden="true"></span> Visit the eBay Store — Jo’MagicBackpack
+      </a>
+      <a class="btn" href="https://www.youtube.com/@YOURCHANNEL" target="_blank" rel="noopener">
+        <span class="dot" aria-hidden="true"></span> YouTube
+      </a>
+      <a class="btn" href="https://www.tiktok.com/@YOURHANDLE" target="_blank" rel="noopener">
+        <span class="dot" aria-hidden="true"></span> TikTok
+      </a>
+      <a class="btn" href="https://www.instagram.com/YOURHANDLE" target="_blank" rel="noopener">
+        <span class="dot" aria-hidden="true"></span> Instagram
+      </a>
+      <a class="btn" href="mailto:hello@jomagicbackpack.com">
+        <span class="dot" aria-hidden="true"></span> Contact
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="about">
+        Jo’Magic Backpack is a traveling trove — vintage and new, unpredictable on purpose.
+        If it sparks curiosity, it goes in the pack. Tap a link above to explore, or
+        <a href="mailto:hello@jomagicbackpack.com" style="color:#8bd3ff;">email us</a>.
+      </div>
+      <div class="hr"></div>
+      <!-- Optional: embed a video later — replace VIDEO_ID -->
+      <!--
+      <div class="video">
+        <iframe width="100%" height="360" src="https://www.youtube.com/embed/VIDEO_ID"
+          title="Jo’Magic Backpack" frameborder="0" allowfullscreen
+          style="border-radius:12px; border:1px solid #232734;"></iframe>
+      </div>
+      -->
+    </div>
+
+    <footer>
+      <div>© <span id="y"></span> Jo’Magic Backpack</div>
+      <div>Site by Jo’Magic Backpack • Hosted on Netlify</div>
+    </footer>
+  </main>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>
 </html>
