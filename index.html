@@ -64,7 +64,10 @@
     }
 
     .jf-viewport{position:relative}
-    .jf-track{list-style:none; margin:0; padding:0; position:relative; overflow:hidden; min-height:1px}
+    .jf-track{
+      list-style:none; margin:0; padding:0; position:relative; overflow:hidden;
+      /* height is set dynamically by JS so slides are never cut off */
+    }
     .jf-slide{position:absolute; inset:0; transform:translateX(100%); transition:transform .4s ease}
 
     .jf-card{
@@ -194,7 +197,8 @@
 
       <script>
         (() => {
-          const slides = Array.from(document.getElementById('jfTrack').children);
+          const track = document.getElementById('jfTrack');
+          const slides = Array.from(track.children);
           const prev = document.getElementById('jfPrev');
           const next = document.getElementById('jfNext');
           const dotsWrap = document.getElementById('jfDots');
@@ -210,7 +214,20 @@
           });
           const dots = Array.from(dotsWrap.children);
 
-          // Helpers
+          // Size the track to the active slide so nothing gets cut off
+          function fitHeight() {
+            const active = slides[index];
+            if (!active) return;
+            // Temporarily reveal to measure if needed
+            const prevTransform = active.style.transform;
+            active.style.transform = 'translateX(0)';
+            track.style.height = active.offsetHeight + 'px';
+            active.style.transform = prevTransform;
+          }
+          const resizeObserver = new ResizeObserver(fitHeight);
+          slides.forEach(slide => resizeObserver.observe(slide));
+
+          // Show slide
           function show(i, user=false){
             index = (i + slides.length) % slides.length;
             slides.forEach((li,k)=>{
@@ -218,14 +235,16 @@
                                : (k<index ? 'translateX(-100%)' : 'translateX(100%)');
             });
             dots.forEach((d,k)=>d.toggleAttribute('aria-current', k===index));
+            fitHeight();
             if (user) restart();
           }
           const nextSlide = () => show(index+1);
           const prevSlide = () => show(index-1);
 
-          // Init positions
+          // Init positions + first height
           slides.forEach(li => li.style.transform = 'translateX(100%)');
           if (slides[0]) slides[0].style.transform = 'translateX(0)';
+          fitHeight();
 
           // Controls
           prev.addEventListener('click', prevSlide);
@@ -240,6 +259,9 @@
           const viewport = document.querySelector('#ebay-feedback .jf-viewport');
           viewport.addEventListener('focusin', stop);
           viewport.addEventListener('focusout', start);
+
+          // Refit on window resize/rotation
+          window.addEventListener('resize', fitHeight, {passive:true});
 
           start();
         })();
