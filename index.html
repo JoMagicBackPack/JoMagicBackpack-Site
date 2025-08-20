@@ -108,7 +108,213 @@
       </div>
       -->
     </div>
+<!-- ========= Jo'MagicBackpack • eBay Feedback Carousel (all-in-one) ========= -->
+<section id="ebay-feedback" aria-label="eBay feedback"
+  style="--card-bg:#fff;--ink:#111;--muted:#6b7280;--ring:#e5e7eb;--accent:#111;--star:#fbbf24;">
+  <div class="jf-wrap">
+    <header class="jf-head">
+      <h2 class="jf-title">What buyers are saying</h2>
+      <p class="jf-sub">Real feedback from my eBay store Jo’MagicBackpack</p>
+    </header>
 
+    <div class="jf-viewport" role="region" aria-roledescription="carousel" aria-label="Buyer testimonials" tabindex="0">
+      <ul class="jf-track" id="jfTrack">
+        <!-- 1 -->
+        <li class="jf-slide" data-index="0" aria-roledescription="slide" aria-label="1 of 5" aria-hidden="false" tabindex="-1">
+          <figure class="jf-card">
+            <div class="jf-stars" aria-label="5 out of 5 stars" data-stars="5"></div>
+            <blockquote class="jf-quote">
+              “Excellent super fast shipping and packing, exactly as described; awesome vintage solid copper mold.
+              Very pleased with purchase—highly recommended. Would buy again. A+++++”
+            </blockquote>
+            <figcaption class="jf-meta">
+              <span class="jf-buyer">- nor-eastern (3588)</span>
+              <span class="jf-date">Past 6 months</span>
+            </figcaption>
+          </figure>
+        </li>
+        <!-- 2 -->
+        <li class="jf-slide" data-index="1" aria-roledescription="slide" aria-label="2 of 5" aria-hidden="true" tabindex="-1">
+          <figure class="jf-card">
+            <div class="jf-stars" aria-label="5 out of 5 stars" data-stars="5"></div>
+            <blockquote class="jf-quote">
+              “Oh my gosh—what a great deal this seller had for me! Beautiful Uno de 50 bracelet at a bargain price.
+              I am so happy. Will visit this seller again—very professional, expertly packed with thank you card inside.
+              5 Star Seller!”
+            </blockquote>
+            <figcaption class="jf-meta">
+              <span class="jf-buyer">- candschel (184)</span>
+              <span class="jf-date">Past year</span>
+            </figcaption>
+          </figure>
+        </li>
+        <!-- 3 -->
+        <li class="jf-slide" data-index="2" aria-roledescription="slide" aria-label="3 of 5" aria-hidden="true" tabindex="-1">
+          <figure class="jf-card">
+            <div class="jf-stars" aria-label="5 out of 5 stars" data-stars="5"></div>
+            <blockquote class="jf-quote">
+              “I rarely leave feedback for a seller until I am rated as a buyer. You must do something that delivers
+              value to my experience and this seller did just that. Fantastic communication and item just as expected.
+              Thank you for offering a level of customer contact that was unexpected and appreciated. 100% satisfied!”
+            </blockquote>
+            <figcaption class="jf-meta">
+              <span class="jf-buyer">- bennettangels3 (911)</span>
+              <span class="jf-date">Past year</span>
+            </figcaption>
+          </figure>
+        </li>
+        <!-- 4 -->
+        <li class="jf-slide" data-index="3" aria-roledescription="slide" aria-label="4 of 5" aria-hidden="true" tabindex="-1">
+          <figure class="jf-card">
+            <div class="jf-stars" aria-label="5 out of 5 stars" data-stars="5"></div>
+            <blockquote class="jf-quote">
+              “Thank you for the vintage jacket that replaced the identical one I wore for 20 years!
+              Could not be happier. Like new and it’s just exactly perfect!”
+            </blockquote>
+            <figcaption class="jf-meta">
+              <span class="jf-buyer">- scanimal68 (55)</span>
+              <span class="jf-date">More than a year ago</span>
+            </figcaption>
+          </figure>
+        </li>
+        <!-- 5 -->
+        <li class="jf-slide" data-index="4" aria-roledescription="slide" aria-label="5 of 5" aria-hidden="true" tabindex="-1">
+          <figure class="jf-card">
+            <div class="jf-stars" aria-label="5 out of 5 stars" data-stars="5"></div>
+            <blockquote class="jf-quote">
+              “This seller really ROCKS! The fastest ever. Thank you!”
+            </blockquote>
+            <figcaption class="jf-meta">
+              <span class="jf-buyer">- migueldinaj (52)</span>
+              <span class="jf-date">More than a year ago</span>
+            </figcaption>
+          </figure>
+        </li>
+      </ul>
+
+      <!-- Controls -->
+      <div class="jf-controls">
+        <button class="jf-btn" id="jfPrev" aria-label="Previous testimonial" type="button">‹</button>
+        <div class="jf-dots" id="jfDots" aria-label="Slides"></div>
+        <button class="jf-btn" id="jfNext" aria-label="Next testimonial" type="button">›</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* ---- Layout ---- */
+    #ebay-feedback { padding: 3rem 1rem; background: var(--page, #f8fafc); color: var(--ink); }
+    #ebay-feedback .jf-wrap { max-width: 980px; margin: 0 auto; }
+    .jf-head { text-align: center; margin-bottom: 1.25rem; }
+    .jf-title { font: 700 1.5rem/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; }
+    .jf-sub { color: var(--muted); margin: .5rem 0 0; font-size: .95rem; }
+
+    /* ---- Carousel ---- */
+    .jf-viewport { position: relative; }
+    .jf-track { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-columns: 100%; grid-auto-flow: column; overflow: hidden; border-radius: 12px; }
+    .jf-slide { padding: 0; }
+    .jf-card { margin: 0; padding: 1.25rem 1.25rem 1rem; background: var(--card-bg); border: 1px solid var(--ring); border-radius: 12px; min-height: 180px; display: grid; gap: .75rem; }
+    .jf-quote { margin: 0; font-size: 1.05rem; line-height: 1.5; }
+    .jf-meta { display: flex; gap: .75rem; align-items: baseline; color: var(--muted); font-size: .9rem; }
+    .jf-stars { --s: 5; --v: 0; position: relative; width: 6.2ch; letter-spacing: .2ch; font-size: 1.05rem; }
+    .jf-stars::before { content: "★★★★★"; color: #d1d5db; }
+    .jf-stars::after  { content: "★★★★★"; position: absolute; left: 0; top: 0; width: calc((var(--v)/var(--s))*100%); overflow: hidden; white-space: nowrap; color: var(--star); }
+
+    /* ---- Controls ---- */
+    .jf-controls { display: grid; grid-template-columns: 2.5rem 1fr 2.5rem; align-items: center; gap: .5rem; margin-top: .75rem; }
+    .jf-btn { height: 2.25rem; width: 2.25rem; border-radius: 999px; border: 1px solid var(--ring); background: #fff; font-size: 1.2rem; line-height: 1; cursor: pointer; }
+    .jf-btn:hover { background: #f3f4f6; }
+    .jf-dots { display: flex; justify-content: center; gap: .5rem; }
+    .jf-dot { width: .5rem; height: .5rem; border-radius: 999px; background: #d1d5db; border: none; cursor: pointer; }
+    .jf-dot[aria-current="true"] { background: var(--accent); }
+
+    /* ---- Motion preferences ---- */
+    @media (prefers-reduced-motion: reduce) {
+      .jf-track { scroll-behavior: auto; }
+    }
+
+    /* ---- Dark mode (optional) ---- */
+    @media (prefers-color-scheme: dark) {
+      #ebay-feedback { --card-bg:#0b0b0b; --ink:#f3f4f6; --muted:#9ca3af; --ring:#1f2937; --accent:#f3f4f6; --star:#fbbf24; --page:#050505; }
+      .jf-btn { background:#0b0b0b; color:#f3f4f6; }
+      .jf-btn:hover { background:#111827; }
+      .jf-stars::before { color:#374151; }
+    }
+  </style>
+
+  <script>
+    (() => {
+      const track = document.getElementById('jfTrack');
+      const slides = Array.from(track.children);
+      const prev = document.getElementById('jfPrev');
+      const next = document.getElementById('jfNext');
+      const dotsWrap = document.getElementById('jfDots');
+
+      // Build dots
+      slides.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.className = 'jf-dot';
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        if (i === 0) b.setAttribute('aria-current', 'true');
+        dotsWrap.appendChild(b);
+      });
+      const dots = Array.from(dotsWrap.children);
+
+      // Stars fill
+      slides.forEach(slide => {
+        const el = slide.querySelector('.jf-stars');
+        const v = Number(el?.getAttribute('data-stars') || 5);
+        el && el.style.setProperty('--v', Math.max(0, Math.min(v, 5)));
+      });
+
+      let index = 0;
+      let timer = null;
+      const total = slides.length;
+
+      function show(i, userTriggered = false) {
+        index = (i + total) % total;
+        slides.forEach((li, k) => {
+          const active = k === index;
+          li.setAttribute('aria-hidden', active ? 'false' : 'true');
+          li.style.transform = `translateX(${(k - index) * 100}%)`;
+        });
+        dots.forEach((d, k) => d.toggleAttribute('aria-current', k === index));
+        if (userTriggered) restart();
+      }
+
+      // Initial positions
+      slides.forEach((li, k) => li.style.transform = `translateX(${k * 100}%)`);
+
+      function nextSlide(){ show(index + 1); }
+      function prevSlide(){ show(index - 1); }
+
+      prev.addEventListener('click', prevSlide);
+      next.addEventListener('click', nextSlide);
+      dots.forEach((d, k) => d.addEventListener('click', () => show(k, true)));
+
+      // Autoplay (pause on hover/focus, respect reduced motion)
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function start(){ if (!prefersReduced) timer = setInterval(nextSlide, 5000); }
+      function stop(){ clearInterval(timer); timer = null; }
+      function restart(){ stop(); start(); }
+
+      const viewport = document.querySelector('#ebay-feedback .jf-viewport');
+      viewport.addEventListener('mouseenter', stop);
+      viewport.addEventListener('mouseleave', start);
+      viewport.addEventListener('focusin', stop);
+      viewport.addEventListener('focusout', start);
+
+      // Keyboard shortcuts
+      viewport.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); prevSlide(); }
+      });
+
+      start();
+    })();
+  </script>
+</section>
     <footer>
       <div>© <span id="y"></span> Jo’Magic Backpack</div>
       <div>Site by Jo’Magic Backpack • Hosted on Netlify</div>
