@@ -12,6 +12,7 @@
     :root{
       --bg:#05060a;           /* page background */
       --band:#0b0e15;         /* subtle section band */
+      --band-2:#0d111a;       /* second band for contrast */
       --card:#0f1218;         /* card panels */
       --stroke:#232734;       /* borders */
       --text:#f5f7fb;         /* main text */
@@ -21,6 +22,7 @@
       --btn:#0d2536;          /* button base */
       --btn-hover:#113149;    /* button hover */
       --shadow:0 20px 60px rgba(0,0,0,.45);
+      --ring:#2a95ff77;       /* focus ring */
     }
 
     *{box-sizing:border-box}
@@ -31,13 +33,14 @@
       -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     }
     a{color:var(--accent)}
+    a:focus-visible, button:focus-visible { outline:3px solid var(--ring); outline-offset:2px }
+
     .wrap{max-width:1040px; margin:0 auto; padding:28px 18px 48px}
 
     /* ===== HERO (logo + glow) ===== */
     .hero{
       position:relative; display:grid; place-items:center; gap:12px;
-      padding:36px 0 24px; text-align:center;
-      isolation:isolate; /* keep the glow behind content */
+      padding:36px 0 24px; text-align:center; isolation:isolate;
     }
     .hero::before{
       content:""; position:absolute; inset:-40px 0 -20px;
@@ -52,12 +55,14 @@
       width:min(72vw, 300px); height:auto; display:block;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,.55));
     }
-    .mission{font-size:clamp(18px,3.8vw,22px); color:var(--muted); margin:10px 0 6px}
+    .mission{
+      font-size:clamp(18px,3.8vw,22px); color:var(--muted); margin:10px 0 6px
+    }
 
     /* ===== NAV Buttons ===== */
     .nav-links{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:10px 0 6px}
     .btn{
-      display:inline-flex; align-items:center; gap:.6ch;
+      display:inline-flex; align-items:center; gap:.6ch; cursor:pointer;
       padding:12px 16px; border-radius:12px;
       background:var(--btn); color:var(--text); text-decoration:none; font-weight:700;
       border:1px solid #1b2a36; box-shadow: var(--shadow);
@@ -69,6 +74,15 @@
 
     /* ===== Section bands ===== */
     .band{background:var(--band); border-radius:18px; border:1px solid var(--stroke); box-shadow:var(--shadow); padding:18px}
+    .band.alt{background:var(--band-2)} /* alternating background to break the “all black” feel */
+
+    /* ===== Section headings with pop ===== */
+    .section-title{
+      font: 800 clamp(22px,6vw,34px)/1.05 system-ui,sans-serif;
+      letter-spacing:.2px; margin:0 0 8px; color:var(--accent);
+      text-shadow:0 0 28px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+    .section-sub{ margin:0; color:var(--muted); font-size:clamp(14px,3.2vw,16px) }
 
     /* ===== About ===== */
     .about{color:var(--muted); line-height:1.6; font-size:clamp(15px,3.2vw,16px)}
@@ -76,11 +90,9 @@
     /* ===== Reviews Carousel (auto-height, no stars) ===== */
     #ebay-feedback{margin-top:18px; padding:20px 0}
     .jf-head{display:grid; gap:.25rem 1rem; align-items:end; margin:0 0 12px}
-    .jf-title{margin:0; font:800 clamp(22px,6vw,34px)/1.05 system-ui,sans-serif; letter-spacing:.2px}
-    .jf-sub{margin:0; color:var(--muted); font-size:clamp(14px,3.2vw,16px)}
     @media (min-width:820px){
       .jf-head{grid-template-columns:1fr 1fr}
-      .jf-sub{text-align:right}
+      .section-sub{text-align:right}
     }
 
     .jf-viewport{position:relative}
@@ -106,13 +118,20 @@
 
     /* ===== Footer ===== */
     footer{color:#9aa3b1; font-size:12px; display:flex; gap:8px; justify-content:space-between; flex-wrap:wrap; margin-top:22px}
+
+    /* ===== Motion preferences ===== */
+    @media (prefers-reduced-motion: reduce){
+      .jf-slide{ transition:none }
+      .jf-track{ transition:none }
+      .btn{ transition:none }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
 
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero" aria-label="Brand header">
       <img class="site-logo"
            src="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png"
            alt="Jo’Magic Backpack Logo" decoding="async" loading="eager" />
@@ -126,18 +145,19 @@
     </section>
 
     <!-- ABOUT -->
-    <section id="about" class="band">
-      <div class="about">
-        Jo’Magic Backpack is a traveling trove — vintage, new, and unpredictable.  
+    <section id="about" class="band alt" aria-labelledby="about-title">
+      <h2 class="section-title" id="about-title">About Jo’Magic Backpack</h2>
+      <p class="about">
+        Jo’Magic Backpack is a traveling trove — vintage, new, and unpredictable.
         If it sparks curiosity, it goes in the pack.
-      </div>
+      </p>
     </section>
 
     <!-- REVIEWS -->
-    <section id="ebay-feedback" aria-label="eBay feedback">
+    <section id="ebay-feedback" aria-label="eBay feedback" class="band" style="margin-top:16px">
       <header class="jf-head">
-        <h2 class="jf-title">What buyers are saying</h2>
-        <p class="jf-sub">Real feedback from real customers</p>
+        <h2 class="section-title">What buyers are saying</h2>
+        <p class="section-sub">Real feedback from real customers</p>
       </header>
 
       <div class="jf-viewport" role="region" aria-roledescription="carousel" aria-label="Buyer testimonials" tabindex="0">
@@ -197,6 +217,7 @@
       const prev = document.getElementById('jfPrev');
       const next = document.getElementById('jfNext');
       const dotsWrap = document.getElementById('jfDots');
+      const viewport = document.querySelector('#ebay-feedback .jf-viewport');
       let index = 0, timer = null;
 
       // dots
@@ -241,11 +262,21 @@
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       function start(){ if(!reduce) timer = setInterval(() => show(index + 1), 5000); }
       function stop(){ clearInterval(timer); timer = null; }
-      const viewport = document.querySelector('#ebay-feedback .jf-viewport');
       viewport.addEventListener('focusin', stop);
       viewport.addEventListener('focusout', start);
       window.addEventListener('resize', () => requestAnimationFrame(fitHeight), {passive:true});
       start();
+
+      // touch swipe for phones
+      let startX = 0, endX = 0;
+      viewport.addEventListener('touchstart', (e)=>{ startX = e.changedTouches[0].clientX; }, {passive:true});
+      viewport.addEventListener('touchend',   (e)=>{
+        endX = e.changedTouches[0].clientX;
+        const dx = endX - startX;
+        if (Math.abs(dx) > 40) { // swipe threshold
+          if (dx < 0) show(index + 1, true); else show(index - 1, true);
+        }
+      }, {passive:true});
 
       // footer year
       document.getElementById('y').textContent = new Date().getFullYear();
