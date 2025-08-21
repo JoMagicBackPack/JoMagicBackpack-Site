@@ -61,7 +61,7 @@ exports.handler = async (event) => {
 
     const token = await getAppToken();
 
-    const apiURL = `${endpoint}?seller_username=${encodeURIComponent(username)}&limit=${limit}`;
+    const apiURL = `${endpoint}?q=${encodeURIComponent(username)}&limit=${limit}`;
     const r = await fetch(apiURL, {
       headers: {
         Authorization: `Bearer ${token}`,
