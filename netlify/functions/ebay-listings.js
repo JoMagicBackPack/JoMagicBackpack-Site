@@ -1,108 +1,55 @@
 // netlify/functions/ebay-listings.js
-// Medium path: eBay Browse API + OAuth (client credentials)
-// Uses env vars: EBAY_CLIENT_ID, EBAY_CLIENT_SECRET, EBAY_SELLER_USERNAME, EBAY_ENV (PROD/SANDBOX), EBAY_MARKETPLACE (e.g., EBAY_US)
 
-const tokenCache = { token: null, expiresAt: 0 };
+const fetch = require("node-fetch");
 
-async function getAppToken() {
-  const now = Date.now();
-  if (tokenCache.token && now < tokenCache.expiresAt - 60_000) return tokenCache.token;
-
-  const CLIENT_ID = process.env.EBAY_CLIENT_ID;
-  const CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
-  const ENV = (process.env.EBAY_ENV || "PROD").toUpperCase();
-
-  const tokenURL =
-    ENV === "SANDBOX"
-      ? "https://api.sandbox.ebay.com/identity/v1/oauth2/token"
-      : "https://api.ebay.com/identity/v1/oauth2/token";
-
-  const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
-  const body = new URLSearchParams({
-    grant_type: "client_credentials",
-    scope: "https://api.ebay.com/oauth/api_scope"
-  });
-
-  const r = await fetch(tokenURL, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${basic}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body
-  });
-
-  if (!r.ok) {
-    const msg = await r.text();
-    throw new Error(`Token request failed: ${r.status} ${msg}`);
-  }
-
-  const data = await r.json();
-  tokenCache.token = data.access_token;
-  tokenCache.expiresAt = Date.now() + data.expires_in * 1000;
-  return tokenCache.token;
-}
-
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   try {
-    // Inputs (fallbacks come from env)
-    const url = new URL(event.rawUrl || `https://x.local${event.path}${event.rawQuery ? "?" + event.rawQuery : ""}`);
-    const username =
-      url.searchParams.get("username") ||
-      process.env.EBAY_SELLER_USERNAME ||
-      "jomagicbackpack";
-    const limit = parseInt(url.searchParams.get("limit") || "24", 10);
+    // Get variables from Netlify env
+    const appId = process.env.EBAY_APP_ID;
+    const seller = process.env.EBAY_SELLER_USER || "jomagicbackpack";
+    const env = process.env.EBAY_ENV || "PRODUCTION"; // "SANDBOX" or "PRODUCTION"
 
-    const ENV = (process.env.EBAY_ENV || "PROD").toUpperCase();
+    const token = process.env.EBAY_OAUTH_TOKEN; // make sure this is set in Netlify
     const endpoint =
-      ENV === "SANDBOX"
+      env === "SANDBOX"
         ? "https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search"
         : "https://api.ebay.com/buy/browse/v1/item_summary/search";
 
-    const token = await getAppToken();
+    // Allow ?q= query or default to seller items
+    const url = new URL(endpoint);
+    if (event.queryStringParameters.q) {
+      url.searchParams.set("q", event.queryStringParameters.q);
+    } else {
+      url.searchParams.set("seller", seller);
+    }
+    url.searchParams.set("limit", "10");
 
-    const apiURL = `${endpoint}?q=${encodeURIComponent(username)}&limit=${limit}`;
-    const r = await fetch(apiURL, {
+    // Call eBay API
+    const response = await fetch(url.toString(), {
       headers: {
         Authorization: `Bearer ${token}`,
-        "X-EBAY-C-MARKETPLACE-ID": process.env.EBAY_MARKETPLACE || "EBAY_US",
-        "Accept-Language": "en-US"
-      }
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+        "Accept-Language": "en-US",
+      },
     });
 
-    if (!r.ok) {
-      const txt = await r.text();
+    if (!response.ok) {
+      const error = await response.text();
       return {
-        statusCode: 502,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ error: "Browse API failed", status: r.status, details: txt })
+        statusCode: response.status,
+        body: JSON.stringify({ error }),
       };
     }
 
-    const data = await r.json();
-    const items = (data.itemSummaries || []).map((it) => ({
-      id: it.itemId,
-      title: it.title,
-      price: it.price?.value,
-      currency: it.price?.currency,
-      url: it.itemWebUrl,
-      image: it.image?.imageUrl || (it.thumbnailImages?.[0]?.imageUrl ?? ""),
-      condition: it.condition
-    }));
-
+    const data = await response.json();
     return {
       statusCode: 200,
-      headers: {
-        "content-type": "application/json",
-        "cache-control": "public, max-age=600"
-      },
-      body: JSON.stringify({ items })
+      body: JSON.stringify(data),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: err.message })
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
