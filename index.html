@@ -10,19 +10,19 @@
   <style>
     /* ===== Theme (dark with vivid accents) ===== */
     :root{
-      --bg:#05060a;           /* page background */
-      --band:#0b0e15;         /* subtle section band */
-      --band-2:#0d111a;       /* second band for contrast */
-      --card:#0f1218;         /* card panels */
-      --stroke:#232734;       /* borders */
-      --text:#f5f7fb;         /* main text */
-      --muted:#b8c0cc;        /* secondary text */
-      --accent:#8bd3ff;       /* electric blue */
-      --accent-2:#c9a9ff;     /* soft purple to mix the glow */
-      --btn:#0d2536;          /* button base */
-      --btn-hover:#113149;    /* button hover */
+      --bg:#05060a;
+      --band:#0b0e15;
+      --band-2:#0d111a;
+      --card:#0f1218;
+      --stroke:#232734;
+      --text:#f5f7fb;
+      --muted:#b8c0cc;
+      --accent:#8bd3ff;
+      --accent-2:#c9a9ff;
+      --btn:#0d2536;
+      --btn-hover:#113149;
       --shadow:0 20px 60px rgba(0,0,0,.45);
-      --ring:#2a95ff77;       /* focus ring */
+      --ring:#2a95ff77;
     }
 
     *{box-sizing:border-box}
@@ -37,7 +37,7 @@
 
     .wrap{max-width:1040px; margin:0 auto; padding:28px 18px 64px}
 
-    /* ===== HERO (logo + glow) ===== */
+    /* ===== HERO ===== */
     .hero{
       position:relative; display:grid; place-items:center; gap:12px;
       padding:36px 0 24px; text-align:center; isolation:isolate;
@@ -48,8 +48,7 @@
         radial-gradient(380px 220px at 50% 10%, #0b1e2c 0%, transparent 60%),
         radial-gradient(440px 280px at 55% 0%, color-mix(in hsl, var(--accent), transparent 60%) 0%, transparent 70%),
         radial-gradient(420px 220px at 45% 10%, color-mix(in hsl, var(--accent-2), transparent 65%) 0%, transparent 70%);
-      filter: blur(18px) saturate(120%);
-      opacity:.9; z-index:-1;
+      filter: blur(18px) saturate(120%); opacity:.9; z-index:-1;
     }
     .site-logo{
       width:min(72vw, 300px); height:auto; display:block;
@@ -74,26 +73,22 @@
 
     /* eBay logo inside button */
     .btn .ebay-logo{
-      height:20px; width:auto; margin-right:8px; vertical-align:middle; display:inline-block;
+      height:28px; width:auto; margin-right:10px; vertical-align:middle; display:inline-block;
       filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
     }
 
-    /* ===== Section bands ===== */
+    /* ===== Sections ===== */
     .band{background:var(--band); border-radius:18px; border:1px solid var(--stroke); box-shadow:var(--shadow); padding:18px}
     .band.alt{background:var(--band-2)}
-
-    /* ===== Section headings ===== */
     .section-title{
       font: 800 clamp(22px,6vw,34px)/1.05 system-ui,sans-serif;
       letter-spacing:.2px; margin:0 0 8px; color:var(--accent);
       text-shadow:0 0 28px color-mix(in srgb, var(--accent) 25%, transparent);
     }
     .section-sub{ margin:0; color:var(--muted); font-size:clamp(14px,3.2vw,16px) }
-
-    /* ===== About ===== */
     .about{color:var(--muted); line-height:1.6; font-size:clamp(15px,3.2vw,16px)}
 
-    /* ===== Reviews Carousel (auto-height, no stars) ===== */
+    /* ===== Reviews Carousel ===== */
     #ebay-feedback{margin-top:18px; padding:20px 0}
     .jf-head{display:grid; gap:.25rem 1rem; align-items:end; margin:0 0 12px}
     @media (min-width:820px){
@@ -112,9 +107,8 @@
       background:var(--card); border:1px solid var(--stroke); border-radius:16px;
       padding:clamp(16px,4vw,28px); display:grid; gap:.8rem; box-shadow:var(--shadow);
     }
-    .jf-quote{margin:0; font-size:clamp(18px,4.6vw,26px); line-height:1.55; word-break:break-word}
+    .jf-quote{margin:0; font-size:clamp(18px,4.6vw,26px); line-height:1.55}
     .jf-meta{margin:0; color:var(--muted); font-size:clamp(14px,3.2vw,16px)}
-
     .jf-controls{display:grid; grid-template-columns:2.75rem 1fr 2.75rem; align-items:center; gap:.6rem; margin-top:.9rem}
     .jf-btn{width:2.75rem; height:2.75rem; border-radius:999px; border:1px solid var(--stroke); background:#0f1117; color:var(--text); font-size:1.25rem}
     .jf-dots{display:flex; justify-content:center; gap:.5rem}
@@ -126,14 +120,14 @@
     #ebay-carousel {
       position: relative;
       overflow: hidden;
-      padding: 0.5rem 2.25rem;    /* room for nav buttons */
+      padding: 0.5rem 2.25rem; /* room for nav buttons */
       margin-top: 10px;
     }
     #carousel-track {
       display: flex;
       gap: 1rem;
       scroll-behavior: smooth;
-      overflow-x: auto;          /* swipeable on mobile */
+      overflow-x: auto; /* swipeable on mobile */
     }
     #carousel-track .card {
       flex: 0 0 auto;
@@ -165,7 +159,7 @@
       font-size: 0.95rem;
       line-height: 1.25;
       margin: 0.45rem 0 0.2rem;
-      height: 2.5em;            /* keep rows aligned */
+      height: 2.5em; /* align rows */
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -174,21 +168,11 @@
       color: var(--accent);
     }
     .carousel-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--stroke);
-      border-radius: 50%;
-      background: var(--band);
-      color: var(--text);
-      font-size: 20px;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      opacity: 0.9;
-      transition: background .2s ease, opacity .2s ease;
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 34px; height: 34px; border: 1px solid var(--stroke);
+      border-radius: 50%; background: var(--band); color: var(--text);
+      font-size: 20px; display: grid; place-items: center;
+      cursor: pointer; opacity: 0.9; transition: background .2s, opacity .2s;
       user-select: none;
     }
     .carousel-nav:hover { background: var(--btn-hover); opacity: 1; }
@@ -219,15 +203,17 @@
       <p class="mission">A menagerie of finds.</p>
 
       <nav class="nav-links" aria-label="Primary">
-        <a class="btn btn--primary" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">
-          <!-- eBay SVG wordmark -->
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2500 781" class="ebay-logo" aria-hidden="true" focusable="false">
-            <path fill="#E53238" d="M587.7 281.7c-49.8 0-85.4 25.5-85.4 70.9 0 30.1 17 51.7 53.3 60.7 28.3 7.1 66.6 8.9 93.9 10.7v4.5c0 17.8-13.4 28.3-37.1 28.3-28.3 0-61.1-9.8-84-24.1l-19.6 39.7c26.4 16.9 65.7 27.4 104.9 27.4 63.9 0 98.6-29.2 98.6-83.6V293.9c0-20.5 1.8-40.1 3.6-57.9h-48.9l-3.6 27.4h-1.8c-18.7-18.7-44.2-27.4-73.1-27.4z"/>
-            <path fill="#0064D2" d="M976.9 281.7c-40.6 0-72.2 10.7-96.8 32.1l22.8 34.2c21.4-15.2 40.1-23.7 69.3-23.7 39.7 0 61.1 17.8 61.1 49.8v10.7c-91.5-.9-150.8 25.5-150.8 82.7 0 34.2 26.4 69.3 83.6 69.3 35.1 0 63.9-12.5 83.6-36.2h.9l4.5 28.3h49.8c-1.8-11.6-3.6-28.3-3.6-45.1V371c0-60.2-38.9-89.1-123.6-89.1z"/>
-            <path fill="#F5AF02" d="M1258.9 280.8c-30.1 0-61.1 12.5-79.8 33h-.9v-137H1126v330.7h52.4l3.6-28.3h.9c18.7 20.5 44.2 32.1 76.1 32.1 57.1 0 116.3-45.1 116.3-118.1-.1-71.2-51.7-112.4-115.8-112.4z"/>
-            <path fill="#86B817" d="M1705.6 281.7c-40.6 0-72.2 10.7-96.8 32.1l22.8 34.2c21.4-15.2 40.1-23.7 69.3-23.7 39.7 0 61.1 17.8 61.1 49.8v10.7c-91.5-.9-150.8 25.5-150.8 82.7 0 34.2 26.4 69.3 83.6 69.3 35.1 0 63.9-12.5 83.6-36.2h.9l4.5 28.3h49.8c-1.8-11.6-3.6-28.3-3.6-45.1V371c0-60.2-39-89.1-123.6-89.1z"/>
-          </svg>
-          Visit the eBay Store
+        <a class="btn btn--primary"
+           href="https://ebay.us/m/xyWXiR"
+           target="_blank"
+           rel="noopener"
+           aria-label="Visit the Jo’Magic Backpack eBay Store">
+          <img src="Assets/IMG_0516.png"
+               class="ebay-logo"
+               alt="eBay logo"
+               width="120" height="34"
+               decoding="async" />
+          <span>Visit the eBay Store</span>
         </a>
         <a class="btn" href="#about">About</a>
         <a class="btn" href="mailto:hello@jomagicbackpack.com">Contact</a>
@@ -369,15 +355,13 @@
       window.addEventListener('resize', () => requestAnimationFrame(fitHeight), {passive:true});
       start();
 
-      // touch swipe for phones
+      // touch swipe
       let startX = 0, endX = 0;
       viewport.addEventListener('touchstart', (e)=>{ startX = e.changedTouches[0].clientX; }, {passive:true});
-      viewport.addEventListener('touchend',   (e)=>{
+      viewport.addEventListener('touchend', (e)=>{
         endX = e.changedTouches[0].clientX;
         const dx = endX - startX;
-        if (Math.abs(dx) > 40) { // swipe threshold
-          if (dx < 0) show(index + 1, true); else show(index - 1, true);
-        }
+        if (Math.abs(dx) > 40) { if (dx < 0) show(index + 1, true); else show(index - 1, true); }
       }, {passive:true});
 
       // footer year
@@ -395,11 +379,11 @@
 
       function getStep() {
         const card = track.querySelector('.card');
-        if (!card) return 300; // fallback
+        if (!card) return 300;
         const style = getComputedStyle(track);
         const gap = parseFloat(style.columnGap || style.gap || '16');
         return card.getBoundingClientRect().width + gap;
-        }
+      }
       function updateButtons() {
         const maxScroll = track.scrollWidth - track.clientWidth - 1;
         prevBtn.disabled = track.scrollLeft <= 0;
@@ -420,7 +404,7 @@
         // Render cards
         track.innerHTML = products.map(p => `
           <a class="card" href="${p.url}" target="_blank" rel="noopener" role="listitem" aria-label="${p.title}">
-            <img src="${p.img}" alt="">
+            <img src="${p.img}" alt="" loading="lazy" decoding="async">
             <div class="title">${p.title}</div>
             <div class="price">${p.price} ${p.currency || ''}</div>
           </a>
@@ -432,11 +416,8 @@
         track.textContent = 'eBay items unavailable right now.';
       }
 
-      // Nav button actions
       prevBtn.addEventListener('click', () => { track.scrollBy({ left: -getStep(), behavior: 'smooth' }); });
       nextBtn.addEventListener('click', () => { track.scrollBy({ left:  getStep(), behavior: 'smooth' }); });
-
-      // Keep buttons accurate as user scrolls/resize
       track.addEventListener('scroll', updateButtons, { passive: true });
       window.addEventListener('resize', updateButtons);
     });
