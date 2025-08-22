@@ -1,112 +1,116 @@
-// netlify/functions/ebay-listings.js
-// eBay Finding API (no OAuth). Minimal deps, rate-limit friendly.
-// Env vars required in Netlify:
-//   EBAY_CLIENT_ID        -> your eBay App ID (a.k.a. Client ID)
-//   EBAY_SELLER_USERNAME  -> your seller username (e.g., "jomagicbackpack")
+// /.netlify/functions/ebay-listings.js
+// Caches eBay Finding API results to avoid rate limits.
+// - Writes/reads a cache file in /tmp (persists for the life of the server instance)
+// - Serves stale cache if eBay rate-limits or errors
+// - Add ?force=1 to bypass cache manually
 
-const https = require("https");
-const { URL } = require("url");
+import fs from "fs/promises";
+import path from "path";
+import fetch from "node-fetch";
 
-// Tiny HTTPS GET helper (no external packages)
-function httpsGet(urlStr) {
-  return new Promise((resolve, reject) => {
-    const req = https.get(urlStr, (res) => {
-      let data = "";
-      res.on("data", (c) => (data += c));
-      res.on("end", () => resolve({ status: res.statusCode, body: data }));
-    });
-    req.on("error", reject);
-    req.end();
-  });
+const APP_ID = process.env.EBAY_APP_ID;      // Netlify env var: your eBay AppID (Client ID)
+const TTL_MS = 30 * 60 * 1000;               // refresh every 30 minutes
+const CACHE_FILE = "/tmp/ebay_cache.json";   // temp file cache
+
+const ok = (body) => ({
+  statusCode: 200,
+  headers: {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "public, max-age=60",   // browsers cache for 60s
+    "access-control-allow-origin": "*"
+  },
+  body: JSON.stringify(body)
+});
+
+const err = (status, message) => ({
+  statusCode: status,
+  headers: { "content-type": "application/json; charset=utf-8" },
+  body: JSON.stringify({ error: message })
+});
+
+async function readCache() {
+  try {
+    const txt = await fs.readFile(CACHE_FILE, "utf8");
+    return JSON.parse(txt);
+  } catch {
+    return null;
+  }
 }
 
-// Simple in-memory cache (lives for the lifetime of the function instance)
-let CACHE = { items: [], at: 0 }; // at = timestamp (ms)
-const CACHE_MS = 10 * 60 * 1000;   // 10 minutes
-
-exports.handler = async (event) => {
+async function writeCache(payload) {
   try {
-    const APP_ID = process.env.EBAY_CLIENT_ID;
-    if (!APP_ID) {
-      return json(500, { error: "Missing EBAY_CLIENT_ID env var in Netlify" });
+    await fs.writeFile(CACHE_FILE, JSON.stringify(payload), "utf8");
+  } catch { /* ignore */ }
+}
+
+export const handler = async (event) => {
+  if (!APP_ID) return err(500, "Missing EBAY_APP_ID env var");
+
+  const url = new URL(event.rawUrl);
+  const seller = url.searchParams.get("seller") || "JoMagicBackpack";
+  const limit  = Math.max(1, Math.min(48, Number(url.searchParams.get("limit") || 12)));
+  const q      = url.searchParams.get("q") || "";
+  const force  = url.searchParams.get("force") === "1";
+
+  // 1) Serve fresh-enough cache unless force=1
+  const cached = await readCache();
+  const now = Date.now();
+  if (!force && cached && (now - new Date(cached.cachedAt).getTime()) < TTL_MS) {
+    return ok({ ...cached, fromCache: true });
+  }
+
+  // 2) Call eBay (single request, normalized output)
+  const endpoint = "https://svcs.ebay.com/services/search/FindingService/v1";
+  const params = new URLSearchParams({
+    "OPERATION-NAME": "findItemsAdvanced",
+    "SERVICE-VERSION": "1.13.0",
+    "SECURITY-APPNAME": APP_ID,
+    "RESPONSE-DATA-FORMAT": "JSON",
+    "REST-PAYLOAD": "true",
+    "siteid": "0",
+    "paginationInput.entriesPerPage": String(limit),
+    "sortOrder": "BestMatch",
+    ...(q ? { keywords: q } : {}),
+    "itemFilter(0).name": "Seller",
+    "itemFilter(0).value(0)": seller,
+    "outputSelector(0)": "PictureURLLarge",
+    "outputSelector(1)": "SellerInfo",
+    "outputSelector(2)": "StoreInfo"
+  });
+
+  try {
+    const res = await fetch(`${endpoint}?${params}`);
+    if (!res.ok) throw new Error(`eBay HTTP ${res.status}`);
+    const json = await res.json();
+
+    // If eBay returns an "errorMessage" block, treat as failure
+    const apiError = json?.findItemsAdvancedResponse?.[0]?.errorMessage;
+    if (apiError) throw new Error(apiError[0]?.error?.[0]?.message?.[0] || "eBay error");
+
+    const items = json?.findItemsAdvancedResponse?.[0]?.searchResult?.[0]?.item || [];
+    const products = items.map(it => {
+      const priceObj = it?.sellingStatus?.[0]?.currentPrice?.[0] || {};
+      const raw = it?.pictureURLLarge?.[0] || it?.galleryURL?.[0] || "";
+      const img = raw.replace(/s-l(?:64|75|96|140)\b/, "s-l500"); // upsize tiny thumbs
+      return {
+        id: it.itemId?.[0],
+        title: it.title?.[0] || "",
+        price: priceObj.__value__ || "",
+        currency: priceObj["@currencyId"] || "",
+        url: it.viewItemURL?.[0] || "#",
+        img
+      };
+    }).filter(p => p.id && p.title && p.url);
+
+    const payload = { products, cachedAt: new Date().toISOString() };
+    await writeCache(payload);
+    return ok(payload);
+
+  } catch (e) {
+    // 3) On rate-limit or any error, serve stale cache if we have it
+    if (cached) {
+      return ok({ ...cached, stale: true });
     }
-    const DEFAULT_SELLER = (process.env.EBAY_SELLER_USERNAME || "jomagicbackpack").trim();
-
-    // Read query params (supports ?q=keywords, ?username=, ?limit=)
-    const rawUrl = event.rawUrl || `https://local.test${event.path}${event.rawQuery ? "?" + event.rawQuery : ""}`;
-    const u = new URL(rawUrl);
-    const keywords = (u.searchParams.get("q") || "").trim();         // optional search words
-    const seller   = (u.searchParams.get("username") || DEFAULT_SELLER).trim();
-    const limit    = Math.max(1, Math.min(50, parseInt(u.searchParams.get("limit") || "24", 10)));
-
-    // Serve cached data if it's fresh
-    if (Date.now() - CACHE.at < CACHE_MS && CACHE.items.length) {
-      return json(200, { items: CACHE.items, cached: true });
-    }
-
-    // Build Finding API call
-    // Always filter by Seller. If keywords provided, add them too.
-    const endpoint = "https://svcs.ebay.com/services/search/FindingService/v1";
-    const sp = new URLSearchParams({
-      "OPERATION-NAME": "findItemsAdvanced",
-      "SERVICE-VERSION": "1.0.0",
-      "SECURITY-APPNAME": APP_ID,
-      "RESPONSE-DATA-FORMAT": "JSON",
-      "REST-PAYLOAD": "true",
-      "paginationInput.entriesPerPage": String(limit),
-      "itemFilter(0).name": "Seller",
-      "itemFilter(0).value(0)": seller,
-      "outputSelector(0)": "SellerInfo",
-      "outputSelector(1)": "PictureURLLarge",
-      "sortOrder": "StartTimeNewest"
-    });
-    if (keywords) sp.set("keywords", keywords);
-
-    const apiUrl = `${endpoint}?${sp.toString()}`;
-
-    const resp = await httpsGet(apiUrl);
-    if (resp.status < 200 || resp.status >= 300) {
-      // Rate limited? Serve last good cache if we have it.
-      if (String(resp.body).includes("RateLimiter") && CACHE.items.length) {
-        return json(200, { items: CACHE.items, rateLimited: true, cached: true });
-      }
-      return json(502, { error: "Finding API HTTP error", status: resp.status, details: String(resp.body).slice(0, 400) });
-    }
-
-    let data;
-    try { data = JSON.parse(resp.body); }
-    catch (e) { return json(502, { error: "Invalid JSON from eBay", details: e.message }); }
-
-    const rawItems = data?.findItemsAdvancedResponse?.[0]?.searchResult?.[0]?.item || [];
-    const items = rawItems.map((it) => ({
-      id: it?.itemId?.[0],
-      title: it?.title?.[0],
-      price: it?.sellingStatus?.[0]?.currentPrice?.[0]?.__value__,
-      currency: it?.sellingStatus?.[0]?.currentPrice?.[0]?.["@currencyId"],
-      url: it?.viewItemURL?.[0],
-      image: it?.pictureURLLarge?.[0] || it?.galleryPlusPictureURL?.[0] || it?.galleryURL?.[0] || "",
-      condition: it?.condition?.[0]?.conditionDisplayName?.[0] || ""
-    }));
-
-    // Update cache on success (even if empty)
-    CACHE = { items, at: Date.now() };
-
-    return json(200, { items });
-  } catch (err) {
-    // Last-resort fallback: serve cache if we have it
-    if (CACHE.items.length) return json(200, { items: CACHE.items, cached: true, error: err.message });
-    return json(500, { error: err.message });
+    return err(500, String(e));
   }
 };
-
-// Helper to return JSON responses
-function json(statusCode, obj) {
-  return {
-    statusCode,
-    headers: {
-      "content-type": "application/json",
-      "cache-control": statusCode === 200 ? "public, max-age=300" : "no-store"
-    },
-    body: JSON.stringify(obj)
-  };
-}
