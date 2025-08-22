@@ -6,7 +6,7 @@
 
 import fs from "fs/promises";
 import path from "path";
-import fetch from "node-fetch";
+
 
 const APP_ID = process.env.EBAY_APP_ID;      // Netlify env var: your eBay AppID (Client ID)
 const TTL_MS = 30 * 60 * 1000;               // refresh every 30 minutes
