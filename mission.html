@@ -1,122 +1,135 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Mission — Jo’Magic Backpack</title>
-  <meta name="description" content="Jo’Magic Backpack mission statement." />
-  <link rel="icon" href="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png" />
+  <meta name="description" content="Jo’Magic Backpack mission statement."/>
+  <link rel="icon" href="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png"/>
 
   <style>
-    /* ===== Dark theme (same palette as index) ===== */
     :root{
-      --bg:#05060a;
-      --band:#0b0e15;
-      --card:#0f1218;
-      --stroke:#232734;
-      --text:#f5f7fb;
-      --muted:#b8c0cc;
-      --accent:#8bd3ff;
-      --btn:#0d2536;
-      --btn-hover:#113149;
-      --shadow:0 20px 60px rgba(0,0,0,.45);
-      --ring:#2a95ff77;
+      --bg:#05060a; --band:#0b0e15; --card:#0f1218; --stroke:#232734;
+      --text:#f5f7fb; --muted:#b8c0cc; --accent:#8bd3ff; --ring:#2a95ff77;
+      --btn:#0d2536; --btn-hover:#113149; --shadow:0 20px 60px rgba(0,0,0,.45);
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
       margin:0; background:var(--bg); color:var(--text);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
       -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     }
-    a{color:#4da6ff}
-    a:focus-visible, button:focus-visible { outline:3px solid var(--ring); outline-offset:2px }
+    a{color:var(--accent); text-decoration:none}
+    a:focus-visible,button:focus-visible{outline:3px solid var(--ring); outline-offset:2px}
 
-    .wrap{max-width:980px; margin:0 auto; padding:32px 18px 56px}
+    .wrap{max-width:1040px; margin:0 auto; padding:24px 18px 28px}
 
-    /* Header bar */
-    .topbar{
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
-      padding:10px 14px; border:1px solid var(--stroke); border-radius:14px;
-      background:linear-gradient(180deg, #0c131b, #0a1017); box-shadow:var(--shadow);
-      position:sticky; top:12px; z-index:10;
+    /* Big card */
+    .panel{
+      background:var(--band);
+      border:1px solid var(--stroke);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding: clamp(18px, 4vw, 36px);
     }
-    .brand{display:flex; align-items:center; gap:.6ch; font-weight:800; letter-spacing:.2px}
-    .brand img{width:28px; height:28px; border-radius:6px}
-    .brand span{font-size:clamp(16px,2.6vw,18px); color:var(--muted)}
-
-    .btn{
-      display:inline-flex; align-items:center; gap:.6ch; cursor:pointer;
-      padding:10px 14px; border-radius:12px; background:var(--btn);
-      color:var(--text); text-decoration:none; font-weight:700;
-      border:1px solid #1b2a36; box-shadow:var(--shadow);
-      transition:transform .15s ease, background .15s ease, border-color .2s ease, box-shadow .2s ease;
-    }
-    .btn:hover{ background:var(--btn-hover); transform:translateY(-1px); border-color:color-mix(in srgb, var(--accent) 60%, #1b2a36) }
-
-    /* Mission block */
-    .paper{
-      margin-top:24px; padding:44px 26px; border:1px solid var(--stroke);
-      background:var(--band); border-radius:18px; box-shadow:var(--shadow);
+    h1{
+      margin:0 0 8px;
+      font: 900 clamp(28px,7vw,56px)/1.02 system-ui,sans-serif;
+      letter-spacing:.2px;
+      color:var(--accent);
       text-align:center;
-    }
-    .section-title{
-      font: 800 clamp(26px,6vw,40px)/1.05 system-ui,sans-serif;
-      margin:0 0 18px; color:var(--accent);
       text-shadow:0 0 28px color-mix(in srgb, var(--accent) 25%, transparent);
     }
-    .lead{
-      font-size:clamp(22px,3.6vw,28px);
-      line-height:1.9;
-      color:var(--text);
-      margin:0 auto 1.1em;
-      max-width:900px;
+    .copy{
+      font-size: clamp(18px, 4.8vw, 22px);
+      line-height: 1.7;
+      color: var(--text);
+      margin: 10px auto 0;
+      max-width: 36ch;
+      text-align: center;
     }
     .cta{
-      font-size:clamp(22px,3.6vw,28px);
-      line-height:1.9; font-weight:800; color:var(--accent);
-      margin:0 auto 1.2em; max-width:900px;
+      margin-top: 18px;
+      font-weight: 800;
+      font-size: clamp(18px, 4.6vw, 22px);
+      text-align:center;
     }
-    .contact{
-      margin-top:22px; font-size:clamp(16px,2.8vw,18px); color:var(--muted)
+
+    /* Bottom bar (re-uses the look of your old top bar) */
+    .bottom-bar{
+      margin-top: 18px;
+      background: radial-gradient(120% 120% at 10% -20%, #0b1e2c 0%, transparent 60%), var(--band);
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:12px 14px;
+      display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap;
     }
-    .actions{margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:900;
+      font-size: clamp(18px,4.8vw,26px);
+    }
+    .brand img{
+      width:32px; height:32px; border-radius:8px; display:block;
+      box-shadow:0 6px 16px rgba(0,0,0,.45);
+    }
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      display:inline-flex; align-items:center; gap:.6ch; cursor:pointer;
+      padding:12px 16px; border-radius:12px; border:1px solid #1b2a36;
+      background:var(--btn); color:var(--text); font-weight:800; text-decoration:none;
+      transition:transform .15s ease, background .15s ease, border-color .2s ease;
+    }
+    .btn:hover{ background:var(--btn-hover); transform:translateY(-1px); border-color:color-mix(in srgb, var(--accent) 60%, #1b2a36) }
+    .btn svg{ width:18px; height:18px; }
+
+    /* Make sure long pages still show the bar near the bottom nicely */
+    .spacer{height:10px}
   </style>
 </head>
 <body>
   <main class="wrap">
-    <!-- Top bar with Home button -->
-    <div class="topbar">
-      <div class="brand">
-        <img src="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png" alt="" decoding="async" />
-        <span>Jo’Magic Backpack</span>
-      </div>
-      <a class="btn" href="index.html">⬅ Home</a>
-    </div>
-
-    <!-- Mission -->
-    <section class="paper" aria-labelledby="mission-title">
-      <h1 id="mission-title" class="section-title">Mission Statement</h1>
-
-      <p class="lead">
-        What’s within Jo’Magic Backpack is never the same twice. Each find is part of a mix of
-        vintage, new, and unexpected pieces that resist prediction. Discovery loses its meaning
-        when it becomes routine, so the backpack is built to stay in motion.
+    <!-- Mission content -->
+    <section class="panel" aria-labelledby="title">
+      <h1 id="title">Mission Statement</h1>
+      <p class="copy">
+        What’s within Jo’Magic Backpack is never the same twice.
+        Each find is part of a mix of vintage, new, and unexpected pieces that resist prediction.
+        Discovery loses its meaning when it becomes routine, so the backpack is built to stay in motion.
         Curiosity is the compass, and every pocket leads somewhere new.
       </p>
-
       <p class="cta">Welcome to Jo’Magic Backpack — please, take a peek inside!</p>
-
-      <p class="contact">
-        Contact:
-        <a href="mailto:info@jomagicbackpack.com">info@jomagicbackpack.com</a>
-      </p>
-
-      <div class="actions">
-        <a class="btn" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">Visit the eBay Store</a>
-        <a class="btn" href="index.html">⬅ Back to Home</a>
-      </div>
     </section>
+
+    <div class="spacer"></div>
+
+    <!-- Bottom bar with Home, Store, Contact -->
+    <footer class="bottom-bar" aria-label="Page footer quick actions">
+      <div class="brand">
+        <img src="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png" alt="" aria-hidden="true">
+        <span>Jo’Magic Backpack</span>
+      </div>
+
+      <nav class="actions" aria-label="Footer links">
+        <a class="btn" href="index.html" aria-label="Go to Home">
+          <!-- home icon -->
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5v8a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          Home
+        </a>
+
+        <a class="btn" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener" aria-label="Visit the eBay Store">
+          <!-- simple eBay glyph -->
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+          eBay Store
+        </a>
+
+        <a class="btn" href="mailto:info@jomagicbackpack.com" aria-label="Email Jo’Magic Backpack">
+          <!-- mail icon -->
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 0 8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          Contact
+        </a>
+      </nav>
+    </footer>
   </main>
 </body>
 </html>
