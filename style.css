@@ -89,3 +89,10 @@ h1 {
   height: 20px;
   margin-right: 8px;
 }
+.btn .ebay-logo {
+  height: 28px;       /* adjust size */
+  width: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+  display: inline-block;
+}
