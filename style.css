@@ -69,3 +69,23 @@ h1 {
 .nav-links a:hover {
   text-decoration: underline;
 }
+.btn-ebay {
+  display: inline-flex;
+  align-items: center;
+  background: #0064d2;
+  color: white;
+  font-weight: bold;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.btn-ebay:hover {
+  background: #0052a3;
+}
+
+.btn-ebay .ebay-logo {
+  height: 20px;
+  margin-right: 8px;
+}
