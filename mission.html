@@ -9,100 +9,100 @@
 
   <style>
     :root{
-      --bg:#05060a; --band:#0b0e15; --card:#0f1218; --stroke:#232734;
-      --text:#f5f7fb; --muted:#b8c0cc; --accent:#8bd3ff; --ring:#2a95ff77;
-      --btn:#0d2536; --btn-hover:#113149; --shadow:0 20px 60px rgba(0,0,0,.45);
+      --bg:#05060a; --panel:#0b0e15; --panel-2:#0d111a;
+      --text:#f5f7fb; --muted:#b8c0cc; --stroke:#232734;
+      --accent:#8bd3ff; --btn:#0d2536; --btn-hover:#113149; --ring:#2a95ff77;
+      --shadow:0 20px 60px rgba(0,0,0,.45);
     }
     *{box-sizing:border-box}
+    html,body{height:100%}
+    html{scroll-behavior:auto}
     body{
       margin:0; background:var(--bg); color:var(--text);
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+      overscroll-behavior-y:none;
     }
-    a{color:var(--accent); text-decoration:none}
-    a:focus-visible,button:focus-visible{outline:3px solid var(--ring); outline-offset:2px}
+    a{color:#56a8ff; text-decoration:none}
+    a:hover{text-decoration:underline}
+    a:focus-visible,button:focus-visible{outline:3px solid var(--ring); outline-offset:3px}
 
-    .wrap{max-width:1040px; margin:0 auto; padding:24px 18px 28px}
+    .wrap{max-width:1040px; margin:0 auto; padding:24px 16px 28px}
 
-    /* Mission Card */
+    /* Mission panel */
     .panel{
-      background:var(--band);
-      border:1px solid var(--stroke);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding: clamp(18px, 4vw, 36px);
+      margin-top:8px; background:var(--panel-2); border:1px solid var(--stroke);
+      border-radius:22px; padding:clamp(22px,4.5vw,40px); box-shadow:var(--shadow);
     }
-    h1{
-      margin:0 0 8px;
-      font: 900 clamp(28px,7vw,56px)/1.02 system-ui,sans-serif;
-      letter-spacing:.2px;
-      color:var(--accent);
+    .title{
+      font:800 clamp(28px,7vw,48px)/1.05 system-ui,sans-serif;
+      color:var(--accent); margin:0 0 clamp(12px,2.8vw,20px);
+      text-shadow:0 0 28px color-mix(in srgb, var(--accent) 30%, transparent);
       text-align:center;
     }
-    .copy{
-      font-size: clamp(18px, 4.8vw, 22px);
-      line-height: 1.7;
-      margin: 10px auto 0;
-      max-width: 40ch;
-      text-align: center;
+    .statement{
+      font-size:clamp(20px,4.6vw,26px);
+      line-height:1.85; color:var(--text); margin:0 auto; max-width:68ch;
+      text-wrap:pretty; text-align:center;
     }
     .cta{
-      margin-top: 18px;
-      font-weight: 800;
-      font-size: clamp(18px, 4.6vw, 22px);
-      text-align:center;
+      margin-top:22px; text-align:center; font-weight:800;
+      font-size:clamp(20px,4.8vw,24px); color:var(--accent);
     }
 
-    /* Bottom bar */
+    /* Bottom bar with buttons */
     .bottom-bar{
-      margin-top: 22px;
-      background: var(--band);
-      border:1px solid var(--stroke);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      padding:12px 16px;
-      display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
+      margin-top:18px; background:var(--panel);
+      border:1px solid var(--stroke); border-radius:18px; box-shadow:var(--shadow);
+      padding:12px 16px; display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
     }
     .btn{
       display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-      padding:10px 14px; border-radius:12px; border:1px solid #1b2a36;
-      background:var(--btn); color:var(--text); font-weight:700;
-      transition:transform .15s ease, background .15s ease;
+      padding:11px 16px; border-radius:12px; border:1px solid #1b2a36;
+      background:var(--btn); color:var(--text); font-weight:700; text-decoration:none;
+      transition:background .15s ease, transform .15s ease, border-color .2s ease;
     }
-    .btn:hover{ background:var(--btn-hover); transform:translateY(-1px); }
-    .btn img{ height:20px; width:auto; display:block; }
-    .btn svg{ width:20px; height:20px; }
+    .btn:hover{ background:var(--btn-hover); transform:translateY(-1px); border-color:#214d68 }
+    .icon{ width:20px; height:20px; display:block }
+    .logo-ebay{ height:20px; width:auto; display:block }
   </style>
 </head>
 <body>
   <main class="wrap">
     <!-- Mission content -->
-    <section class="panel" aria-labelledby="title">
-      <h1 id="title">Mission Statement</h1>
-      <p class="copy">
+    <section class="panel" aria-labelledby="mission-title">
+      <h1 id="mission-title" class="title">Mission Statement</h1>
+
+      <p class="statement">
         What’s within Jo’Magic Backpack is never the same twice.
         Each find is part of a mix of vintage, new, and unexpected pieces that resist prediction.
         Discovery loses its meaning when it becomes routine, so the backpack is built to stay in motion.
         Curiosity is the compass, and every pocket leads somewhere new.
       </p>
+
       <p class="cta">Welcome to Jo’Magic Backpack — please, take a peek inside!</p>
     </section>
 
-    <!-- Bottom navigation -->
+    <!-- Bottom navigation (no tiny logo) -->
     <footer class="bottom-bar" aria-label="Quick links">
-      <a class="btn" href="index.html">
-        <!-- house icon -->
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5v8a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-8z"/></svg>
+      <a class="btn" href="index.html" aria-label="Home">
+        <!-- House icon -->
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+          <path d="M3 10.5 12 3l9 7.5v8a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-8z"/>
+        </svg>
         Home
       </a>
 
-      <a class="btn" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">
-        <img src="Assets/IMG_0516.png" alt="eBay logo">
-        Store
+      <a class="btn" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener" aria-label="eBay Store">
+        <img class="logo-ebay" src="Assets/IMG_0516.png" alt="eBay Store">
       </a>
 
-      <a class="btn" href="mailto:info@jomagicbackpack.com">
-        <!-- envelope icon -->
-        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 0 8 6 8-6"/></svg>
+      <a class="btn" href="mailto:info@jomagicbackpack.com" aria-label="Contact by email">
+        <!-- Envelope icon -->
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+          <path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>
+          <path d="m4 6 8 6 8-6"/>
+        </svg>
         Contact
       </a>
     </footer>
