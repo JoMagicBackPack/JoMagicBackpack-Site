@@ -73,26 +73,26 @@
     /* PRODUCTS carousel */
     #ebay-products { margin-top:16px; }
     #ebay-carousel { position: relative; overflow: hidden; padding: 0.5rem 2.25rem; margin-top: 10px; }
-    #carousel-track {
-      display:flex; gap:1rem; scroll-behavior:smooth; overflow-x:auto; overscroll-behavior-x:contain;
-    }
+    #carousel-track { display:flex; gap:1rem; scroll-behavior:smooth; overflow-x:auto; overscroll-behavior-x:contain; }
     #carousel-track .card{
       flex:0 0 auto; min-width:220px; max-width:240px; border:1px solid var(--stroke); border-radius:12px;
       background:var(--card); padding:0.5rem; text-decoration:none; color:var(--text); box-shadow:var(--shadow);
       transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
     #carousel-track .card:hover{ transform:translateY(-4px); box-shadow:0 6px 16px rgba(0,0,0,.45); border-color: color-mix(in srgb, var(--accent) 50%, var(--stroke)) }
-    /* Image: show full image without cropping */
+
+    /* Ensure full image is visible */
     #carousel-track img{
       width:100%;
+      aspect-ratio: 1 / 1;
       height:auto;
-      aspect-ratio: 4 / 3;          /* keeps rows even; adjust if you prefer 1:1 */
-      object-fit:contain;
-      background:#0b0e15;
+      object-fit: contain;         /* show the whole image */
+      background:#0b0e15;          /* letterbox fill */
       border-radius:8px;
       display:block;
     }
-    #carousel-track .title{ font-size:.95rem; line-height:1.25; margin:.45rem 0 .2rem; height:2.5em; overflow:hidden; text-overflow:ellipsis }
+
+    #carousel-track .title{ font-size:.95rem; line-height:1.25; margin:.45rem 0 .2rem; max-height:2.6em; overflow:hidden; text-overflow:ellipsis }
     #carousel-track .price{ font-weight:800; color:var(--accent) }
     .carousel-nav{
       position:absolute; top:50%; transform:translateY(-50%);
@@ -137,7 +137,7 @@
       <p class="section-sub">Live feed from the eBay store</p>
       <div id="ebay-carousel" aria-label="eBay product carousel">
         <button class="carousel-nav prev" aria-label="Scroll left" type="button">‹</button>
-        <div id="carousel-track" role="list"></div>
+        <div id="carousel-track" role="list">Loading…</div>
         <button class="carousel-nav next" aria-label="Scroll right" type="button">›</button>
       </div>
     </section>
@@ -247,25 +247,13 @@
     })();
   </script>
 
-  <!-- Live eBay Products Carousel JS (auto-scroll, chunked, robust) -->
+  <!-- Live eBay Products Carousel JS -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=400`;
-
-      const track   = document.getElementById('carousel-track');
-      const wrap    = document.getElementById('ebay-carousel');
-      const prevBtn = wrap.querySelector('.prev');
-      const nextBtn = wrap.querySelector('.next');
-
-      const CHUNK_SIZE = 12;
-      const AUTOPLAY_MS = 5500;
-      const RESUME_AFTER_MS = 9000;
-
-      let all = [];
-      let rendered = 0;
-      let autoTimer = null;
-      let restartTimer = null;
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=48`;
+      const track = document.getElementById('carousel-track');
+      const prevBtn = document.querySelector('#ebay-carousel .prev');
+      const nextBtn = document.querySelector('#ebay-carousel .next');
 
       function getStep() {
         const card = track.querySelector('.card');
@@ -277,125 +265,54 @@
       function updateButtons() {
         const maxScroll = track.scrollWidth - track.clientWidth - 1;
         prevBtn.disabled = track.scrollLeft <= 0;
-        nextBtn.disabled = track.scrollLeft >= maxScroll && !hasMore();
+        nextBtn.disabled = track.scrollLeft >= maxScroll;
       }
-      function hasMore(){ return rendered < all.length; }
-      function to500(u){ return (u || '').replace(/s-l\d+\.jpg/i, 's-l500.jpg'); }
-      function fmtPrice(p, c) {
-        const n = Number(p);
-        if (Number.isFinite(n)) return `${c ? c + ' ' : ''}${n.toFixed(2)}`;
-        return c || '';
-      }
-      function normalize(raw) {
-        return {
-          title: raw?.title ?? '',
-          url:   raw?.url   ?? '#',
-          img:   to500(raw?.img ?? raw?.image ?? ''),
-          price: raw?.price,
-          currency: raw?.currency
-        };
-      }
-
-      function appendChunk() {
-        const slice = all.slice(rendered, rendered + CHUNK_SIZE);
-        if (!slice.length) return;
-
-        const frag = document.createDocumentFragment();
-        for (const p of slice) {
-          if (!p.title && !p.img && !p.url) continue;
-
-          const a = document.createElement('a');
-          a.className = 'card';
-          a.href = p.url || '#'; a.target = '_blank'; a.rel = 'noopener';
-          a.setAttribute('role','listitem');
-          a.setAttribute('aria-label', p.title);
-
-          const image = document.createElement('img');
-          image.src = p.img; image.alt = p.title; image.loading = 'lazy';
-          a.appendChild(image);
-
-          const t = document.createElement('div');
-          t.className = 'title';
-          t.textContent = p.title;
-          a.appendChild(t);
-
-          const pr = document.createElement('div');
-          pr.className = 'price';
-          pr.textContent = fmtPrice(p.price, p.currency);
-          a.appendChild(pr);
-
-          frag.appendChild(a);
-        }
-        track.appendChild(frag);
-        rendered += slice.length;
-        updateButtons();
-      }
-
-      function ensureMoreIfNearEnd() {
-        const step = getStep();
-        const nearEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - step * 2;
-        if (nearEnd && hasMore()) appendChunk();
-      }
-
-      function autoTick() {
-        ensureMoreIfNearEnd();
-        const step = getStep();
-        const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2 && !hasMore();
-        if (atEnd) track.scrollTo({ left: 0, behavior: 'smooth' });
-        else track.scrollBy({ left: step, behavior: 'smooth' });
-      }
-      function startAuto() {
-        if (reduceMotion) return;
-        stopAuto();
-        autoTimer = setInterval(autoTick, AUTOPLAY_MS);
-      }
-      function stopAuto() { if (autoTimer) clearInterval(autoTimer); autoTimer = null; }
-      function stopAutoTemporarily(ms = RESUME_AFTER_MS) {
-        stopAuto();
-        if (restartTimer) clearTimeout(restartTimer);
-        restartTimer = setTimeout(() => startAuto(), ms);
-      }
-
-      prevBtn.addEventListener('click', () => { stopAutoTemporarily(); track.scrollBy({ left: -getStep(), behavior: 'smooth' }); });
-      nextBtn.addEventListener('click', () => { stopAutoTemporarily(); ensureMoreIfNearEnd(); track.scrollBy({ left:  getStep(), behavior: 'smooth' }); });
-      track.addEventListener('scroll', () => { ensureMoreIfNearEnd(); updateButtons(); }, { passive: true });
-      wrap.addEventListener('mouseenter', () => stopAutoTemporarily(), { passive: true });
-      wrap.addEventListener('mouseleave', () => startAuto(), { passive: true });
-      wrap.addEventListener('focusin',  () => stopAutoTemporarily(), { passive: true });
-      wrap.addEventListener('focusout', () => startAuto(), { passive: true });
-      track.addEventListener('pointerdown', () => stopAutoTemporarily(), { passive: true });
-      document.addEventListener('visibilitychange', () => { if (document.hidden) stopAuto(); else startAuto(); });
 
       try {
         const res = await fetch(endpoint, { cache: 'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+        console.log('ebay-listings response:', data);
 
-        // Accept either { products: [...] } OR { items: [...] }
-        const rawList =
-          (Array.isArray(data.products) && data.products) ||
-          (Array.isArray(data.items)    && data.items)    ||
-          [];
+        // Accept both shapes for safety
+        let products = Array.isArray(data.products) ? data.products : [];
+        if (!products.length && Array.isArray(data.items)) {
+          products = data.items.map(it => ({
+            title: it.title,
+            url: it.url,
+            img: it.img || it.image || '',
+            price: it.price,
+            currency: it.currency,
+          }));
+        }
 
-        all = rawList.map(normalize).filter(p => p.url || p.title || p.img);
-
-        if (!all.length) {
+        if (!products.length) {
           track.textContent = 'eBay items unavailable right now.';
           updateButtons();
           return;
         }
 
-        appendChunk();                         // initial render
-        requestIdleCallback?.(() => appendChunk()); // pre-warm another chunk if idle
-        startAuto();
-      } catch (e) {
-        console.error('Failed to load eBay listings:', e);
+        track.innerHTML = products.map(p => `
+          <a class="card" href="${p.url}" target="_blank" rel="noopener" role="listitem" aria-label="${p.title}">
+            <img src="${p.img}" alt="">
+            <div class="title">${p.title}</div>
+            <div class="price">${p.price} ${p.currency || ''}</div>
+          </a>
+        `).join('');
+
+        updateButtons();
+      } catch (err) {
+        console.error('Failed to load eBay listings:', err);
         track.textContent = 'eBay items unavailable right now.';
       }
 
-      // footer year + resize hook
+      prevBtn.addEventListener('click', () => track.scrollBy({ left: -getStep(), behavior: 'smooth' }));
+      nextBtn.addEventListener('click', () => track.scrollBy({ left:  getStep(), behavior: 'smooth' }));
+      track.addEventListener('scroll', updateButtons, { passive: true });
+      window.addEventListener('resize', updateButtons);
+
+      // footer year
       document.getElementById('y').textContent = new Date().getFullYear();
-      window.addEventListener('resize', updateButtons, { passive: true });
     });
   </script>
 </body>
