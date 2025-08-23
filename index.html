@@ -1,85 +1,310 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Jo’MagicBackpack</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root { --gap: 14px; --cardW: 200px; --imgH: 160px; }
-    body { margin:0; font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111; }
-    header { padding:18px 16px; border-bottom:1px solid #eee; }
-    main { padding:16px; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jo’Magic Backpack</title>
+  <meta name="description" content="Jo’Magic Backpack — a menagerie of vintage + new finds." />
+  <link rel="icon" href="Assets/brand-logo.png?v=2" />
 
-    /* Fresh in the Backpack: simple horizontal carousel */
-    .rail {
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: var(--cardW);
-      gap: var(--gap);
-      overflow-x: auto;
-      overscroll-behavior-x: contain;
-      scroll-snap-type: x mandatory;
-      padding-bottom: 8px;
+  <style>
+    :root{
+      --bg:#05060a; --band:#0b0e15; --band-2:#0d111a; --card:#0f1218; --stroke:#232734;
+      --text:#f5f7fb; --muted:#b8c0cc; --accent:#8bd3ff; --accent-2:#c9a9ff;
+      --btn:#0d2536; --btn-hover:#113149; --shadow:0 20px 60px rgba(0,0,0,.45); --ring:#2a95ff77;
     }
-    .rail::-webkit-scrollbar { height: 8px; }
-    .rail::-webkit-scrollbar-thumb { background:#ccc; border-radius: 8px; }
-    .card { scroll-snap-align: start; }
-    .card a { display:block; text-decoration:none; color:inherit; }
-    .card img {
-      width:100%; height: var(--imgH); object-fit: cover; border-radius: 12px; background:#f5f5f5;
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     }
-    .title { margin-top:8px; font-size:14px; line-height:1.35; }
-    .price { font-weight:700; margin-top:4px; font-size:14px; }
-    #ebay-carousel { margin-top: 12px; }
+    a{color:var(--accent); text-decoration:none}
+    a:focus-visible,button:focus-visible{outline:3px solid var(--ring); outline-offset:2px}
+    .wrap{max-width:1040px; margin:0 auto; padding:28px 18px 64px}
+
+    /* HERO */
+    .hero{position:relative; display:grid; place-items:center; gap:12px; padding:36px 0 24px; text-align:center}
+    .hero::before{
+      content:""; position:absolute; inset:-40px 0 -20px; z-index:-1; filter: blur(18px) saturate(120%); opacity:.9;
+      background:
+        radial-gradient(380px 220px at 50% 10%, #0b1e2c 0%, transparent 60%),
+        radial-gradient(440px 280px at 55% 0%, color-mix(in hsl, var(--accent), transparent 60%) 0%, transparent 70%),
+        radial-gradient(420px 220px at 45% 10%, color-mix(in hsl, var(--accent-2), transparent 65%) 0%, transparent 70%);
+    }
+    .site-logo{width:min(72vw, 280px); height:auto; display:block; filter: drop-shadow(0 8px 24px rgba(0,0,0,.55))}
+    .mission{font-size:clamp(18px,3.8vw,22px); color:var(--muted); margin:10px 0 20px}
+
+    /* NAV */
+    .nav-links{display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-bottom:12px}
+    .btn{
+      display:inline-flex; align-items:center; gap:.6ch; cursor:pointer; padding:12px 16px; border-radius:12px;
+      background:var(--btn); color:var(--text); font-weight:700; border:1px solid #1b2a36; box-shadow:var(--shadow);
+      transition:transform .15s ease, background .15s ease, border-color .2s ease;
+    }
+    .btn:hover{ background:var(--btn-hover); transform:translateY(-1px); border-color:color-mix(in srgb, var(--accent) 60%, #1b2a36) }
+    .btn--primary{ background:linear-gradient(180deg, #1a3a52, #0c2a3e); border-color:#214d68 }
+    .btn--primary:hover{ background:linear-gradient(180deg, #224d6b, #123852) }
+    .btn .ebay-logo{ height:20px; width:auto; margin-right:6px; display:inline-block; vertical-align:middle }
+
+    /* SECTIONS */
+    .band{background:var(--band); border-radius:18px; border:1px solid var(--stroke); box-shadow:var(--shadow); padding:18px; margin-top:16px}
+    .band.alt{background:var(--band-2)}
+    .section-title{font:800 clamp(22px,6vw,32px)/1.1 system-ui,sans-serif; color:var(--accent); margin:0 0 6px}
+    .section-sub{color:var(--muted); margin:0 0 12px}
+    .about{color:var(--muted); line-height:1.6}
+
+    /* REVIEWS carousel */
+    .jf-head{display:grid; gap:.25rem 1rem; align-items:end; margin:0 0 12px}
+    @media (min-width:820px){ .jf-head{grid-template-columns:1fr 1fr} .section-sub{text-align:right} }
+    .jf-viewport{position:relative}
+    .jf-track{ list-style:none; margin:0; padding:0; position:relative; overflow:hidden; height:auto; transition:height .28s ease }
+    .jf-slide{ position:absolute; inset:0; transform:translateX(100%); transition:transform .35s ease }
+    .jf-slide:first-child{ transform:translateX(0) }
+    .jf-card{ width:100%; max-width:860px; margin:0 auto; background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:clamp(16px,4vw,28px); display:grid; gap:.8rem; box-shadow:var(--shadow) }
+    .jf-quote{ margin:0; font-size:clamp(18px,4.6vw,26px); line-height:1.55 }
+    .jf-meta{ margin:0; color:var(--muted); font-size:clamp(14px,3.2vw,16px) }
+    .jf-controls{display:grid; grid-template-columns:2.75rem 1fr 2.75rem; align-items:center; gap:.6rem; margin-top:.9rem}
+    .jf-btn{width:2.75rem; height:2.75rem; border-radius:999px; border:1px solid var(--stroke); background:#0f1117; color:var(--text); font-size:1.25rem}
+    .jf-dots{display:flex; justify-content:center; gap:.5rem}
+    .jf-dot{width:.55rem; height:.55rem; border-radius:999px; background:#6b7280; border:none}
+    .jf-dot[aria-current="true"]{background:var(--accent)}
+
+    /* PRODUCTS carousel */
+    #ebay-products { margin-top:16px; }
+    #ebay-carousel { position: relative; overflow: hidden; padding: 0.5rem 2.25rem; margin-top: 10px; }
+    #carousel-track { display:flex; gap:1rem; scroll-behavior:smooth; overflow-x:auto; overscroll-behavior-x:contain; }
+    #carousel-track .card{
+      flex:0 0 auto; min-width:220px; max-width:240px; border:1px solid var(--stroke); border-radius:12px;
+      background:var(--card); padding:0.5rem; text-decoration:none; color:var(--text); box-shadow:var(--shadow);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    #carousel-track .card:hover{ transform:translateY(-4px); box-shadow:0 6px 16px rgba(0,0,0,.45); border-color: color-mix(in srgb, var(--accent) 50%, var(--stroke)) }
+    #carousel-track img{ width:100%; height:160px; object-fit:cover; border-radius:8px; display:block; background:#0b0e15 }
+    #carousel-track .title{ font-size:.95rem; line-height:1.25; margin:.45rem 0 .2rem; height:2.5em; overflow:hidden; text-overflow:ellipsis }
+    #carousel-track .price{ font-weight:800; color:var(--accent) }
+    .carousel-nav{
+      position:absolute; top:50%; transform:translateY(-50%);
+      width:34px; height:34px; border:1px solid var(--stroke); border-radius:50%;
+      background:var(--band); color:var(--text); font-size:20px; display:grid; place-items:center; cursor:pointer; opacity:.9;
+      transition:background .2s ease, opacity .2s ease; user-select:none;
+    }
+    .carousel-nav:hover{ background:var(--btn-hover); opacity:1 }
+    .carousel-nav:disabled{ opacity:.35; cursor:default }
+    .carousel-nav.prev{ left:.5rem } .carousel-nav.next{ right:.5rem }
+
+    footer{color:#9aa3b1; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; margin-top:22px}
   </style>
 </head>
 <body>
-  <header>
-    <h1 style="margin:0;">Jo’MagicBackpack</h1>
-  </header>
+  <main class="wrap">
 
-  <main>
-    <!-- Your other content here -->
+    <!-- HERO -->
+    <section class="hero" aria-label="Brand header">
+      <img class="site-logo" src="Assets/brand-logo.png?v=2" alt="Jo’Magic Backpack Logo" />
+      <p class="mission">Vintage, new, and unpredictable. If it sparks curiosity, it goes in the pack.</p>
 
-    <!-- Fresh in the Backpack (drop-in) -->
-    <section id="fresh" style="margin-top: 24px;">
-      <h2 style="margin:0 0 8px; font:600 20px/1.2 system-ui,-apple-system,Segoe UI,Roboto;">Fresh in the Backpack</h2>
-      <div id="ebay-carousel">Loading…</div>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="btn" href="mission.html">Mission Statement</a>
+        <a class="btn" href="#ebay-feedback">Reviews</a>
+        <a class="btn" href="mailto:info@jomagicbackpack.com">Contact</a>
+        <a class="btn btn--primary" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">
+          <img class="ebay-logo" src="Assets/IMG_0516.png?v=2" alt="eBay Logo" /> Visit the eBay Store
+        </a>
+      </nav>
     </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="band alt" aria-labelledby="about-title">
+      <h2 class="section-title" id="about-title">About Jo’Magic Backpack</h2>
+      <p class="about">Jo’Magic Backpack is a traveling trove — vintage, new, and unpredictable. If it sparks curiosity, it goes in the pack.</p>
+    </section>
+
+    <!-- LIVE PRODUCTS -->
+    <section id="ebay-products" class="band alt" aria-labelledby="products-title">
+      <h2 class="section-title" id="products-title">Fresh in the Backpack</h2>
+      <p class="section-sub">Live feed from the eBay store</p>
+      <div id="ebay-carousel" aria-label="eBay product carousel">
+        <button class="carousel-nav prev" aria-label="Scroll left" type="button">‹</button>
+        <div id="carousel-track" role="list"></div>
+        <button class="carousel-nav next" aria-label="Scroll right" type="button">›</button>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="ebay-feedback" class="band" aria-label="eBay feedback">
+      <header class="jf-head">
+        <h2 class="section-title">What buyers are saying</h2>
+        <p class="section-sub">Real feedback from real customers</p>
+      </header>
+
+      <div class="jf-viewport" role="region" aria-roledescription="carousel" aria-label="Buyer testimonials">
+        <ul class="jf-track" id="jfTrack">
+          <li class="jf-slide">
+            <figure class="jf-card">
+              <blockquote class="jf-quote">“Excellent super fast shipping and packing, exactly as described; awesome vintage solid copper mold. Very pleased with purchase—highly recommended. Would buy again. A+++++”</blockquote>
+              <figcaption class="jf-meta">- nor-eastern (3588) · Past 6 months</figcaption>
+            </figure>
+          </li>
+          <li class="jf-slide">
+            <figure class="jf-card">
+              <blockquote class="jf-quote">“Oh my gosh—what a great deal this seller had for me! Beautiful Uno de 50 bracelet at a bargain price. Very professional, expertly packed with thank you card inside. 5 Star Seller!”</blockquote>
+              <figcaption class="jf-meta">- candschel (184) · Past year</figcaption>
+            </figure>
+          </li>
+          <li class="jf-slide">
+            <figure class="jf-card">
+              <blockquote class="jf-quote">“I rarely leave feedback until I’m rated as a buyer. You must do something that delivers value to my experience and this seller did just that. Fantastic communication and item just as expected. Thank you for offering a level of customer contact that was unexpected and appreciated. 100% satisfied!”</blockquote>
+              <figcaption class="jf-meta">- bennettangels3 (911) · Past year</figcaption>
+            </figure>
+          </li>
+        </ul>
+
+        <div class="jf-controls">
+          <button class="jf-btn" id="jfPrev" aria-label="Previous">‹</button>
+          <div class="jf-dots" id="jfDots"></div>
+          <button class="jf-btn" id="jfNext" aria-label="Next">›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div>© <span id="y"></span> Jo’Magic Backpack</div>
+      <div>Site by Jo’Magic Backpack • Hosted on Netlify</div>
+    </footer>
   </main>
 
-  <!-- Fetch + render listings -->
+  <!-- Reviews Carousel JS -->
   <script>
-  (async () => {
-    const mount = document.getElementById('ebay-carousel');
-    try {
-      const res = await fetch('/.netlify/functions/ebay-listings?limit=12', { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();           // { source, count, items: [...] }
-      const items = Array.isArray(data.items) ? data.items : [];
-      if (!items.length) { mount.textContent = 'No items right now.'; return; }
+    (() => {
+      const track = document.getElementById('jfTrack');
+      const slides = Array.from(track.children);
+      const prev = document.getElementById('jfPrev');
+      const next = document.getElementById('jfNext');
+      const dotsWrap = document.getElementById('jfDots');
+      let index = 0, timer = null;
 
-      // Upgrade ebay images from s-l140.jpg → s-l500.jpg when possible
-      const big = (u) => u ? u.replace(/s-l\d+\.jpg/i, 's-l500.jpg') : '';
+      slides.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.className = 'jf-dot'; b.type = 'button';
+        b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        if (i === 0) b.setAttribute('aria-current', 'true');
+        dotsWrap.appendChild(b);
+      });
+      const dots = Array.from(dotsWrap.children);
 
-      mount.innerHTML = `
-        <div class="rail" aria-label="Fresh eBay items">
-          ${items.map(it => `
-            <div class="card">
-              <a href="${it.url}" target="_blank" rel="noopener">
-                <img src="${big(it.image)}" alt="${(it.title||'').replace(/"/g,'&quot;')}" loading="lazy">
-                <div class="title">${(it.title||'').slice(0,70)}${(it.title||'').length>70?'…':''}</div>
-                <div class="price">$${Number(it.price).toFixed(2)}</div>
-              </a>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    } catch (err) {
-      console.error('eBay carousel error:', err);
-      mount.textContent = 'eBay items unavailable right now.';
-    }
-  })();
+      function fitHeight(){
+        const active = slides[index];
+        if (!active) return;
+        const h = active.scrollHeight;
+        requestAnimationFrame(() => { track.style.height = h + 'px'; });
+      }
+
+      function show(i, user=false){
+        index = (i + slides.length) % slides.length;
+        slides.forEach((li, k) => {
+          li.style.transform = (k === index) ? 'translateX(0)'
+                           : (k < index ? 'translateX(-100%)' : 'translateX(100%)');
+        });
+        dots.forEach((d, k) => d.toggleAttribute('aria-current', k === index));
+        fitHeight();
+        if (user){ stop(); start(); }
+      }
+
+      // init
+      slides.forEach(li => li.style.transform = 'translateX(100%)');
+      if (slides[0]) slides[0].style.transform = 'translateX(0)';
+      requestAnimationFrame(fitHeight);
+
+      // controls
+      prev.addEventListener('click', () => show(index - 1, true));
+      next.addEventListener('click', () => show(index + 1, true));
+      dots.forEach((d, k) => d.addEventListener('click', () => show(k, true)));
+
+      // autoplay (no focus listeners to avoid iOS jump)
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function start(){ if(!reduce) timer = setInterval(() => show(index + 1), 5000); }
+      function stop(){ clearInterval(timer); timer = null; }
+      start();
+
+      // swipe
+      const viewport = document.querySelector('#ebay-feedback .jf-viewport');
+      let startX = 0;
+      viewport.addEventListener('touchstart', (e)=>{ startX = e.changedTouches[0].clientX; }, {passive:true});
+      viewport.addEventListener('touchend', (e)=>{
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 40) show(index + (dx < 0 ? 1 : -1), true);
+      }, {passive:true});
+      window.addEventListener('resize', () => requestAnimationFrame(fitHeight), {passive:true});
+    })();
+  </script>
+
+  <!-- Live eBay Products Carousel JS -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=12`;
+      const track = document.getElementById('carousel-track');
+      const prevBtn = document.querySelector('#ebay-carousel .prev');
+      const nextBtn = document.querySelector('#ebay-carousel .next');
+
+      function getStep() {
+        const card = track.querySelector('.card');
+        if (!card) return 300;
+        const style = getComputedStyle(track);
+        const gap = parseFloat(style.columnGap || style.gap || '16');
+        return card.getBoundingClientRect().width + gap;
+      }
+      function updateButtons() {
+        const maxScroll = track.scrollWidth - track.clientWidth - 1;
+        prevBtn.disabled = track.scrollLeft <= 0;
+        nextBtn.disabled = track.scrollLeft >= maxScroll;
+      }
+
+      try {
+        const res = await fetch(endpoint, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json(); // { source, count, items: [...] }
+        const items = Array.isArray(data.items) ? data.items : [];
+
+        if (!items.length) {
+          track.textContent = 'eBay items unavailable right now.';
+          updateButtons();
+          return;
+        }
+
+        // Map API shape → cards expected by this page
+        const to500 = (u) => u ? u.replace(/s-l\d+\.jpg/i, 's-l500.jpg') : '';
+        const products = items.map(it => ({
+          url: it.url,
+          img: to500(it.image),
+          title: it.title,
+          price: `$${Number(it.price).toFixed(2)}`,
+          currency: it.currency || 'USD'
+        }));
+
+        track.innerHTML = products.map(p => `
+          <a class="card" href="${p.url}" target="_blank" rel="noopener" role="listitem" aria-label="${(p.title || '').replace(/"/g,'&quot;')}">
+            <img src="${p.img}" alt="${(p.title || '').replace(/"/g,'&quot;')}">
+            <div class="title">${(p.title || '').slice(0, 80)}${(p.title||'').length>80?'…':''}</div>
+            <div class="price">${p.price}</div>
+          </a>
+        `).join('');
+
+        updateButtons();
+      } catch (err) {
+        console.error('Failed to load eBay listings:', err);
+        track.textContent = 'eBay items unavailable right now.';
+      }
+
+      prevBtn.addEventListener('click', () => track.scrollBy({ left: -getStep(), behavior: 'smooth' }));
+      nextBtn.addEventListener('click', () => track.scrollBy({ left:  getStep(), behavior: 'smooth' }));
+      track.addEventListener('scroll', updateButtons, { passive: true });
+      window.addEventListener('resize', updateButtons);
+
+      // footer year
+      document.getElementById('y').textContent = new Date().getFullYear();
+    });
   </script>
 </body>
 </html>
