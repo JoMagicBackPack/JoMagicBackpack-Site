@@ -212,23 +212,19 @@
         if (user){ stop(); start(); }
       }
 
-      // init
       slides.forEach(li => li.style.transform = 'translateX(100%)');
       if (slides[0]) slides[0].style.transform = 'translateX(0)';
       requestAnimationFrame(fitHeight);
 
-      // controls
       prev.addEventListener('click', () => show(index - 1, true));
       next.addEventListener('click', () => show(index + 1, true));
       dots.forEach((d, k) => d.addEventListener('click', () => show(k, true)));
 
-      // autoplay (no focus listeners to avoid iOS jump)
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       function start(){ if(!reduce) timer = setInterval(() => show(index + 1), 5000); }
       function stop(){ clearInterval(timer); timer = null; }
       start();
 
-      // swipe
       const viewport = document.querySelector('#ebay-feedback .jf-viewport');
       let startX = 0;
       viewport.addEventListener('touchstart', (e)=>{ startX = e.changedTouches[0].clientX; }, {passive:true});
@@ -243,25 +239,22 @@
   <!-- Live eBay Products Carousel JS (chunked + auto-advance) -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=all`; // backend caps to MAX_TOTAL
+      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=all`; // function caps total
       const track   = document.getElementById('carousel-track');
       const wrap    = document.getElementById('ebay-carousel');
       const prevBtn = wrap.querySelector('.prev');
       const nextBtn = wrap.querySelector('.next');
 
-      // ---- config ----
-      const CHUNK_SIZE = 24;            // how many new cards to append per chunk
-      const AUTOPLAY_MS = 4000;         // auto-advance every 4s
-      const RESUME_AFTER_MS = 8000;     // resume autoplay after user interaction
+      const CHUNK_SIZE = 24;
+      const AUTOPLAY_MS = 4000;
+      const RESUME_AFTER_MS = 8000;
 
-      // ---- state ----
-      let allItems = [];
-      let renderedCount = 0;
+      let all = [];
+      let rendered = 0;
       let autoTimer = null;
       let restartTimer = null;
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // ---- helpers ----
       function getStep() {
         const card = track.querySelector('.card');
         if (!card) return 300;
@@ -274,22 +267,22 @@
         prevBtn.disabled = track.scrollLeft <= 0;
         nextBtn.disabled = track.scrollLeft >= maxScroll && !hasMore();
       }
-      function to500(u){ return u ? u.replace(/s-l\\d+\\.jpg/i, 's-l500.jpg') : ''; }
-      function hasMore(){ return renderedCount < allItems.length; }
+      function hasMore(){ return rendered < all.length; }
+      function to500(u){ return u ? u.replace(/s-l\d+\.jpg/i, 's-l500.jpg') : ''; }
 
       function appendChunk() {
-        const slice = allItems.slice(renderedCount, renderedCount + CHUNK_SIZE);
+        const slice = all.slice(rendered, rendered + CHUNK_SIZE);
         if (!slice.length) return;
-        const html = slice.map(it => \`
-          <a class="card" href="\${it.url}" target="_blank" rel="noopener" role="listitem"
-             aria-label="\${(it.title||'').replace(/"/g,'&quot;')}">
-            <img src="\${to500(it.image)}" alt="\${(it.title||'').replace(/"/g,'&quot;')}" loading="lazy">
-            <div class="title">\${(it.title||'').slice(0,80)}\${(it.title||'').length>80?'…':''}</div>
-            <div class="price">$ \${Number(it.price).toFixed(2)}</div>
+        const html = slice.map(p => `
+          <a class="card" href="${p.url}" target="_blank" rel="noopener" role="listitem"
+             aria-label="${(p.title||'').replace(/"/g,'&quot;')}">
+            <img src="${to500(p.img)}" alt="${(p.title||'').replace(/"/g,'&quot;')}" loading="lazy">
+            <div class="title">${(p.title||'').slice(0,80)}${(p.title||'').length>80?'…':''}</div>
+            <div class="price">${p.currency ? p.currency + ' ' : '$'}${Number(p.price).toFixed(2)}</div>
           </a>
-        \`).join('');
+        `).join('');
         track.insertAdjacentHTML('beforeend', html);
-        renderedCount += slice.length;
+        rendered += slice.length;
         updateButtons();
       }
 
@@ -298,78 +291,53 @@
         if (nearEnd && hasMore()) appendChunk();
       }
 
-      // ---- autoplay ----
       function autoTick() {
         ensureMoreIfNearEnd();
         const step = getStep();
-        const atAbsoluteEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2 && !hasMore();
-        if (atAbsoluteEnd) {
-          track.scrollTo({ left: 0, behavior: 'smooth' }); // loop to start
-        } else {
-          track.scrollBy({ left: step, behavior: 'smooth' });
-        }
+        const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2 && !hasMore();
+        if (atEnd) track.scrollTo({ left: 0, behavior: 'smooth' });
+        else track.scrollBy({ left: step, behavior: 'smooth' });
       }
       function startAuto() {
-        if (reduceMotion) return;      // respect user motion preference
+        if (reduceMotion) return;
         stopAuto();
         autoTimer = setInterval(autoTick, AUTOPLAY_MS);
       }
-      function stopAuto() {
-        if (autoTimer) clearInterval(autoTimer);
-        autoTimer = null;
-      }
+      function stopAuto() { if (autoTimer) clearInterval(autoTimer); autoTimer = null; }
       function stopAutoTemporarily(ms = RESUME_AFTER_MS) {
         stopAuto();
         if (restartTimer) clearTimeout(restartTimer);
         restartTimer = setTimeout(() => startAuto(), ms);
       }
 
-      // ---- events ----
-      prevBtn.addEventListener('click', () => {
-        stopAutoTemporarily();
-        track.scrollBy({ left: -getStep(), behavior: 'smooth' });
-      });
-      nextBtn.addEventListener('click', () => {
-        stopAutoTemporarily();
-        ensureMoreIfNearEnd();
-        track.scrollBy({ left:  getStep(), behavior: 'smooth' });
-      });
-      track.addEventListener('scroll', () => {
-        ensureMoreIfNearEnd();
-        updateButtons();
-      }, { passive: true });
-
+      prevBtn.addEventListener('click', () => { stopAutoTemporarily(); track.scrollBy({ left: -getStep(), behavior: 'smooth' }); });
+      nextBtn.addEventListener('click', () => { stopAutoTemporarily(); ensureMoreIfNearEnd(); track.scrollBy({ left:  getStep(), behavior: 'smooth' }); });
+      track.addEventListener('scroll', () => { ensureMoreIfNearEnd(); updateButtons(); }, { passive: true });
       wrap.addEventListener('mouseenter', () => stopAutoTemporarily(), { passive: true });
       wrap.addEventListener('mouseleave', () => startAuto(), { passive: true });
       wrap.addEventListener('focusin',  () => stopAutoTemporarily(), { passive: true });
       wrap.addEventListener('focusout', () => startAuto(), { passive: true });
       track.addEventListener('pointerdown', () => stopAutoTemporarily(), { passive: true });
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) stopAuto(); else startAuto();
-      });
+      document.addEventListener('visibilitychange', () => { if (document.hidden) stopAuto(); else startAuto(); });
 
-      // ---- fetch & boot ----
       try {
         const res = await fetch(endpoint, { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json(); // { source, total?, count, items: [...] }
-        allItems = Array.isArray(data.items) ? data.items : [];
-
-        if (!allItems.length) {
+        const data = await res.json();
+        all = Array.isArray(data.products) ? data.products : [];
+        if (!all.length) {
           track.textContent = 'eBay items unavailable right now.';
           updateButtons();
           return;
         }
-
-        appendChunk();   // first chunk
-        appendChunk();   // second chunk immediately for fuller rail
-        startAuto();     // start autoscroll
-      } catch (err) {
-        console.error('Failed to load eBay listings:', err);
+        appendChunk(); // start with two chunks so the rail is full
+        appendChunk();
+        startAuto();
+      } catch (e) {
+        console.error('Failed to load eBay listings:', e);
         track.textContent = 'eBay items unavailable right now.';
       }
 
-      // footer year + button state on load/resize
       document.getElementById('y').textContent = new Date().getFullYear();
       window.addEventListener('resize', updateButtons, { passive: true });
     });
