@@ -1,156 +1,153 @@
-/**
- * Netlify Function: ebay-listings
- * --------------------------------
- * Returns JSON shaped for the front-end carousel:
- *   { products: [{ id, title, price, currency, url, img }, ...] }
- *
- * Uses eBay Trading API (GetMyeBaySelling) with a USER TOKEN (v^1.1...).
- * No app/secret headers needed for Auth'n'Auth when a valid user token is provided.
- *
- * ENV VARS (set in Netlify -> Site config -> Environment):
- *   EBAY_USER_TOKEN  (preferred)  - your long user token
- *   EBAY_AUTH_TOKEN  (fallback)   - supported for compatibility
- *   EBAY_SITE_ID     (optional)   - default "0" (US)
- */
+// netlify/functions/ebay-listings.js
+// Fetch active eBay listings via Trading API (Auth'n'Auth user token).
+// Env required: EBAY_USER_TOKEN
 
-const API_URL = "https://api.ebay.com/ws/api.dll";
-const SITE_ID = process.env.EBAY_SITE_ID || "0"; // 0 = US
-const COMPAT_LEVEL = "1203";                     // current Trading API compat
-const PAGE_SIZE_TRADING = 200;                   // Trading API max per page
-const MAX_TOTAL = 600;                           // hard cap returned to client
+const EBAY_TRADING_ENDPOINT = 'https://api.ebay.com/ws/api.dll';
+// A modern compatibility level that works fine for GetMyeBaySelling.
+const EBAY_COMPAT_LEVEL = '1147';
+
+function httpRes(status, bodyObj) {
+  return {
+    statusCode: status,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      // Allow your site to fetch this from the browser
+      'Access-Control-Allow-Origin': '*',
+      // Cache at edge for 5 min; browsers for 60s
+      'Cache-Control': 'public, max-age=60, s-maxage=300',
+    },
+    body: JSON.stringify(bodyObj),
+  };
+}
+
+// very small XML helpers (no external deps)
+function getTag(xml, tag) {
+  const m = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i'));
+  return m ? m[1].trim() : '';
+}
+function getAttr(xml, tag, attr) {
+  const m = xml.match(new RegExp(`<${tag}[^>]*\\b${attr}="([^"]+)"[^>]*>`, 'i'));
+  return m ? m[1] : '';
+}
+function to500(url) {
+  return (url || '').replace(/s-l\d+\.jpg/i, 's-l500.jpg');
+}
 
 exports.handler = async (event) => {
   try {
     const token = process.env.EBAY_USER_TOKEN || process.env.EBAY_AUTH_TOKEN;
     if (!token) {
-      return json({ error: "Missing EBAY_USER_TOKEN (or EBAY_AUTH_TOKEN) env var" }, 500);
+      return httpRes(500, { error: 'Missing EBAY_USER_TOKEN env var.' });
     }
 
-    const limitParam = (event.queryStringParameters?.limit || "").toLowerCase();
-    const limit = limitParam === "all"
-      ? MAX_TOTAL
-      : clampInt(parseInt(limitParam || "24", 10), 1, MAX_TOTAL);
+    // Respect ?limit= (default 48, hard max 400)
+    const urlParams = new URLSearchParams(event.queryStringParameters || {});
+    const requested = Math.min(
+      Math.max(parseInt(urlParams.get('limit') || '48', 10) || 48, 1),
+      400
+    );
 
-    const items = await fetchActiveListings(token, limit);
+    let page = 1;
+    const perPage = 100; // Trading API max entries/page for ActiveList is 200; 100 keeps payload modest.
+    const items = [];
 
-    // Shape for the front-end carousel
-    const products = items.slice(0, limit).map((it) => ({
-      id: it.id,
-      title: it.title,
-      price: it.price,
-      currency: it.currency || "USD",
-      url: it.url || `https://www.ebay.com/itm/${it.id}`,
-      img: it.image
-    }));
+    // Loop until we collect requested items or run out
+    while (items.length < requested) {
+      const xmlBody = `<?xml version="1.0" encoding="utf-8"?>
+<GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>${token}</eBayAuthToken>
+  </RequesterCredentials>
+  <ActiveList>
+    <Include>true</Include>
+    <Pagination>
+      <EntriesPerPage>${perPage}</EntriesPerPage>
+      <PageNumber>${page}</PageNumber>
+    </Pagination>
+  </ActiveList>
+  <ErrorLanguage>en_US</ErrorLanguage>
+  <WarningLevel>Low</WarningLevel>
+</GetMyeBaySellingRequest>`;
 
-    return json({ products });
+      const res = await fetch(EBAY_TRADING_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/xml',
+          'X-EBAY-API-CALL-NAME': 'GetMyeBaySelling',
+          'X-EBAY-API-SITEID': '0',
+          'X-EBAY-API-COMPATIBILITY-LEVEL': EBAY_COMPAT_LEVEL,
+        },
+        body: xmlBody,
+      });
+
+      const bodyText = await res.text();
+      console.log(`[TRADING] status=${res.status} bodyLen=${bodyText.length}`);
+
+      if (!res.ok) {
+        return httpRes(res.status, { error: 'Trading API error', status: res.status });
+      }
+
+      // Basic API ack/error check
+      const ack = getTag(bodyText, 'Ack') || getTag(bodyText, 'ack');
+      if (/^Failure$/i.test(ack)) {
+        const shortMsg = getTag(bodyText, 'ShortMessage');
+        const longMsg = getTag(bodyText, 'LongMessage');
+        return httpRes(500, { error: 'eBay Failure', shortMsg, longMsg });
+      }
+
+      // Extract <Item>...</Item> blocks from <ActiveList>
+      const activeBlock = getTag(bodyText, 'ActiveList');
+      if (!activeBlock) break;
+
+      const itemMatches = activeBlock.match(/<Item>([\s\S]*?)<\/Item>/gi) || [];
+      for (const block of itemMatches) {
+        // Fields we want
+        const id = getTag(block, 'ItemID');
+        const title = getTag(block, 'Title');
+        const price = getTag(block, 'CurrentPrice');
+        const currency =
+          getAttr(block, 'CurrentPrice', 'currencyID') ||
+          getAttr(block, 'ConvertedCurrentPrice', 'currencyID') ||
+          'USD';
+        // Prefer canonical URL; fallback to ListingDetails.ViewItemURL or ViewItemURL
+        const url =
+          getTag(block, 'ViewItemURLForNaturalSearch') ||
+          getTag(block, 'ViewItemURL') ||
+          getTag(getTag(block, 'ListingDetails') || '', 'ViewItemURL') ||
+          '';
+
+        // Image: try GalleryURL, then first PictureURL
+        let image =
+          getTag(block, 'GalleryURL') ||
+          (getTag(block, 'PictureDetails').match(/<PictureURL>[\s\S]*?<\/PictureURL>/i)?.[0] || '')
+            .replace(/<\/?PictureURL>/gi, '') ||
+          '';
+
+        items.push({
+          id,
+          title,
+          price: price || '',
+          currency,
+          url,
+          image: to500(image),
+        });
+
+        if (items.length >= requested) break;
+      }
+
+      // Stop if this page returned fewer than perPage
+      if (itemMatches.length < perPage) break;
+      page += 1;
+      if (page > 50) break; // safety guard
+    }
+
+    return httpRes(200, {
+      source: 'trading',
+      count: items.length,
+      items,
+    });
   } catch (err) {
-    console.error("ebay-listings error:", err);
-    return json({ error: err.message || "Unhandled error" }, 500);
+    console.error('Function error:', err);
+    return httpRes(500, { error: 'Server error', message: String(err?.message || err) });
   }
 };
-
-/** ----------------- Helpers ------------------ */
-
-function json(data, status = 200) {
-  return {
-    statusCode: status,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-    body: JSON.stringify(data),
-  };
-}
-
-function clampInt(n, min, max) {
-  if (!Number.isFinite(n)) return min;
-  return Math.min(Math.max(n, min), max);
-}
-
-function escapeXml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
-}
-
-function match1(re, s) { const m = re.exec(s); return m ? m[1] : undefined; }
-function toInt(s) { const n = parseInt(s, 10); return Number.isFinite(n) ? n : null; }
-function decodeHtml(s) {
-  if (s == null) return s;
-  return String(s)
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"').replace(/&apos;/g, "'");
-}
-
-/**
- * Fetch active listings using Trading API with pagination.
- * Returns lightweight objects: { id, title, price, currency, url, image }
- */
-async function fetchActiveListings(token, limit) {
-  let page = 1;
-  let totalPages = null;
-  const out = [];
-
-  while (out.length < limit) {
-    const entriesPerPage = Math.min(PAGE_SIZE_TRADING, limit - out.length);
-
-    const bodyXml = `<?xml version="1.0" encoding="utf-8"?>
-      <GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-        <RequesterCredentials>
-          <eBayAuthToken>${escapeXml(token)}</eBayAuthToken>
-        </RequesterCredentials>
-        <ActiveList>
-          <Include>true</Include>
-          <Pagination>
-            <EntriesPerPage>${entriesPerPage}</EntriesPerPage>
-            <PageNumber>${page}</PageNumber>
-          </Pagination>
-        </ActiveList>
-        <DetailLevel>ReturnAll</DetailLevel>
-        <WarningLevel>High</WarningLevel>
-      </GetMyeBaySellingRequest>`;
-
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "X-EBAY-API-CALL-NAME": "GetMyeBaySelling",
-        "X-EBAY-API-SITEID": SITE_ID,
-        "X-EBAY-API-COMPATIBILITY-LEVEL": COMPAT_LEVEL,
-        "Content-Type": "text/xml",
-      },
-      body: bodyXml,
-    });
-
-    const text = await resp.text();
-    console.log(`[TRADING p${page}] status=${resp.status} bodyLen=${text.length}`);
-    if (!resp.ok) throw new Error(`Trading API HTTP ${resp.status}`);
-
-    // Determine total pages (first pass)
-    if (totalPages == null) {
-      totalPages = toInt(match1(/<TotalNumberOfPages>(\d+)<\/TotalNumberOfPages>/, text)) || 1;
-    }
-
-    // Extract <Item> blocks
-    const reItem = /<Item>([\s\S]*?)<\/Item>/g;
-    let m;
-    while ((m = reItem.exec(text))) {
-      const x = m[1];
-      out.push({
-        id: match1(/<ItemID>(.*?)<\/ItemID>/, x),
-        title: decodeHtml(match1(/<Title>(.*?)<\/Title>/, x)),
-        price: match1(/<CurrentPrice[^>]*>(.*?)<\/CurrentPrice>/, x),
-        currency: match1(/<CurrentPrice[^>]*currencyID="(.*?)"/, x),
-        url: decodeHtml(match1(/<ViewItemURL>(.*?)<\/ViewItemURL>/, x)),
-        image:
-          decodeHtml(match1(/<GalleryURL>(.*?)<\/GalleryURL>/, x)) ||
-          decodeHtml(match1(/<PictureURL>(.*?)<\/PictureURL>/, x)),
-      });
-      if (out.length >= limit) break;
-    }
-
-    const gotFullPage = out.length % entriesPerPage === 0; // rough check
-    if (page >= totalPages || !gotFullPage || out.length >= limit) break;
-    page += 1;
-    if (page > 50) break; // safety stop
-  }
-
-  return out;
-}
