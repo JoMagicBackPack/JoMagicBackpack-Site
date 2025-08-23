@@ -245,28 +245,13 @@
       }, {passive:true});
       window.addEventListener('resize', () => requestAnimationFrame(fitHeight), {passive:true});
     })();
-  </script>
-
-  <!-- Live eBay Products Carousel JS (stable, chunked, defensive) -->
+    <!-- Live eBay Products Carousel JS -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Keep limit modest for stability; you can raise later
-      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=240`;
-
-      const track   = document.getElementById('carousel-track');
-      const wrap    = document.getElementById('ebay-carousel');
-      const prevBtn = wrap.querySelector('.prev');
-      const nextBtn = wrap.querySelector('.next');
-
-      const CHUNK_SIZE = 12;           // render 12 at a time
-      const AUTOPLAY_MS = 5500;        // auto-advance cadence
-      const RESUME_AFTER_MS = 9000;     // pause after user interaction
-
-      let all = [];
-      let rendered = 0;
-      let autoTimer = null;
-      let restartTimer = null;
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=400`;
+      const track = document.getElementById('carousel-track');
+      const prevBtn = document.querySelector('#ebay-carousel .prev');
+      const nextBtn = document.querySelector('#ebay-carousel .next');
 
       function getStep() {
         const card = track.querySelector('.card');
@@ -275,28 +260,58 @@
         const gap = parseFloat(style.columnGap || style.gap || '16');
         return card.getBoundingClientRect().width + gap;
       }
+
       function updateButtons() {
         const maxScroll = track.scrollWidth - track.clientWidth - 1;
         prevBtn.disabled = track.scrollLeft <= 0;
-        nextBtn.disabled = track.scrollLeft >= maxScroll && !hasMore();
-      }
-      function hasMore(){ return rendered < all.length; }
-      function to500(u){ return (u || '').replace(/s-l\d+\.jpg/i, 's-l500.jpg'); }
-      function fmtPrice(p, c) {
-        const n = Number(p);
-        if (Number.isFinite(n)) return `${c ? c + ' ' : ''}${n.toFixed(2)}`;
-        return c || '';
+        nextBtn.disabled = track.scrollLeft >= maxScroll;
       }
 
-      function appendChunk() {
-        const slice = all.slice(rendered, rendered + CHUNK_SIZE);
-        if (!slice.length) return;
+      try {
+        const res = await fetch(endpoint, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { products = [] } = await res.json();
 
-        const frag = document.createDocumentFragment();
-        for (const p of slice) {
-          const title = (p?.title ?? '').toString();
-          const url   = (p?.url ?? '').toString();
-          const img   = to500(p?.img ?? '');
+        if (!products.length) {
+          track.textContent = 'eBay items unavailable right now.';
+          updateButtons();
+          return;
+        }
+
+        track.innerHTML = products.map(p => `
+          <a class="card" href="${p.url}" target="_blank" rel="noopener" role="listitem" aria-label="${p.title}">
+            <img src="${p.img}" alt="" style="width:100%; height:auto; object-fit:contain; background:#0b0e15; border-radius:8px;">
+            <div class="title">${p.title}</div>
+            <div class="price">USD ${p.price}</div>
+          </a>
+        `).join('');
+
+        updateButtons();
+
+        // Auto-scroll loop
+        setInterval(() => {
+          const step = getStep();
+          if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 1) {
+            track.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            track.scrollBy({ left: step, behavior: 'smooth' });
+          }
+          updateButtons();
+        }, 4000); // every 4 seconds
+      } catch (err) {
+        console.error('Failed to load eBay listings:', err);
+        track.textContent = 'eBay items unavailable right now.';
+      }
+
+      prevBtn.addEventListener('click', () => track.scrollBy({ left: -getStep(), behavior: 'smooth' }));
+      nextBtn.addEventListener('click', () => track.scrollBy({ left: getStep(), behavior: 'smooth' }));
+      track.addEventListener('scroll', updateButtons, { passive: true });
+      window.addEventListener('resize', updateButtons);
+    });
+
+    // footer year
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
 
           if (!title && !img && !url) continue; // skip broken items
 
