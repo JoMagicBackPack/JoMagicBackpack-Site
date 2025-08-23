@@ -73,26 +73,26 @@
     /* PRODUCTS carousel */
     #ebay-products { margin-top:16px; }
     #ebay-carousel { position: relative; overflow: hidden; padding: 0.5rem 2.25rem; margin-top: 10px; }
-    #carousel-track { display:flex; gap:1rem; scroll-behavior:smooth; overflow-x:auto; overscroll-behavior-x:contain; }
+    #carousel-track {
+      display:flex; gap:1rem; scroll-behavior:smooth; overflow-x:auto; overscroll-behavior-x:contain;
+    }
     #carousel-track .card{
-      flex:0 0 auto; min-width:240px; max-width:260px; border:1px solid var(--stroke); border-radius:12px;
+      flex:0 0 auto; min-width:220px; max-width:240px; border:1px solid var(--stroke); border-radius:12px;
       background:var(--card); padding:0.5rem; text-decoration:none; color:var(--text); box-shadow:var(--shadow);
       transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
     #carousel-track .card:hover{ transform:translateY(-4px); box-shadow:0 6px 16px rgba(0,0,0,.45); border-color: color-mix(in srgb, var(--accent) 50%, var(--stroke)) }
+    /* Image: show full image without cropping */
     #carousel-track img{
       width:100%;
-      height:180px;             /* taller window */
-      object-fit:contain;       /* show full image */
+      height:auto;
+      aspect-ratio: 4 / 3;          /* keeps rows even; adjust if you prefer 1:1 */
+      object-fit:contain;
+      background:#0b0e15;
       border-radius:8px;
       display:block;
-      background:#0b0e15;       /* letterbox area */
     }
-    #carousel-track .title{
-      font-size:.95rem; line-height:1.25; margin:.45rem 0 .2rem;
-      display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
-      overflow:hidden; min-height:2.5em;
-    }
+    #carousel-track .title{ font-size:.95rem; line-height:1.25; margin:.45rem 0 .2rem; height:2.5em; overflow:hidden; text-overflow:ellipsis }
     #carousel-track .price{ font-weight:800; color:var(--accent) }
     .carousel-nav{
       position:absolute; top:50%; transform:translateY(-50%);
@@ -245,13 +245,27 @@
       }, {passive:true});
       window.addEventListener('resize', () => requestAnimationFrame(fitHeight), {passive:true});
     })();
-    <!-- Live eBay Products Carousel JS -->
+  </script>
+
+  <!-- Live eBay Products Carousel JS (auto-scroll, chunked, robust) -->
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const endpoint = `${location.origin}/.netlify/functions/ebay-listings?limit=400`;
-      const track = document.getElementById('carousel-track');
-      const prevBtn = document.querySelector('#ebay-carousel .prev');
-      const nextBtn = document.querySelector('#ebay-carousel .next');
+
+      const track   = document.getElementById('carousel-track');
+      const wrap    = document.getElementById('ebay-carousel');
+      const prevBtn = wrap.querySelector('.prev');
+      const nextBtn = wrap.querySelector('.next');
+
+      const CHUNK_SIZE = 12;
+      const AUTOPLAY_MS = 5500;
+      const RESUME_AFTER_MS = 9000;
+
+      let all = [];
+      let rendered = 0;
+      let autoTimer = null;
+      let restartTimer = null;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       function getStep() {
         const card = track.querySelector('.card');
@@ -260,79 +274,54 @@
         const gap = parseFloat(style.columnGap || style.gap || '16');
         return card.getBoundingClientRect().width + gap;
       }
-
       function updateButtons() {
         const maxScroll = track.scrollWidth - track.clientWidth - 1;
         prevBtn.disabled = track.scrollLeft <= 0;
-        nextBtn.disabled = track.scrollLeft >= maxScroll;
+        nextBtn.disabled = track.scrollLeft >= maxScroll && !hasMore();
+      }
+      function hasMore(){ return rendered < all.length; }
+      function to500(u){ return (u || '').replace(/s-l\d+\.jpg/i, 's-l500.jpg'); }
+      function fmtPrice(p, c) {
+        const n = Number(p);
+        if (Number.isFinite(n)) return `${c ? c + ' ' : ''}${n.toFixed(2)}`;
+        return c || '';
+      }
+      function normalize(raw) {
+        return {
+          title: raw?.title ?? '',
+          url:   raw?.url   ?? '#',
+          img:   to500(raw?.img ?? raw?.image ?? ''),
+          price: raw?.price,
+          currency: raw?.currency
+        };
       }
 
-      try {
-        const res = await fetch(endpoint, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { products = [] } = await res.json();
+      function appendChunk() {
+        const slice = all.slice(rendered, rendered + CHUNK_SIZE);
+        if (!slice.length) return;
 
-        if (!products.length) {
-          track.textContent = 'eBay items unavailable right now.';
-          updateButtons();
-          return;
-        }
-
-        track.innerHTML = products.map(p => `
-          <a class="card" href="${p.url}" target="_blank" rel="noopener" role="listitem" aria-label="${p.title}">
-            <img src="${p.img}" alt="" style="width:100%; height:auto; object-fit:contain; background:#0b0e15; border-radius:8px;">
-            <div class="title">${p.title}</div>
-            <div class="price">USD ${p.price}</div>
-          </a>
-        `).join('');
-
-        updateButtons();
-
-        // Auto-scroll loop
-        setInterval(() => {
-          const step = getStep();
-          if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 1) {
-            track.scrollTo({ left: 0, behavior: 'smooth' });
-          } else {
-            track.scrollBy({ left: step, behavior: 'smooth' });
-          }
-          updateButtons();
-        }, 4000); // every 4 seconds
-      } catch (err) {
-        console.error('Failed to load eBay listings:', err);
-        track.textContent = 'eBay items unavailable right now.';
-      }
-
-      prevBtn.addEventListener('click', () => track.scrollBy({ left: -getStep(), behavior: 'smooth' }));
-      nextBtn.addEventListener('click', () => track.scrollBy({ left: getStep(), behavior: 'smooth' }));
-      track.addEventListener('scroll', updateButtons, { passive: true });
-      window.addEventListener('resize', updateButtons);
-    });
-
-    // footer year
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
-
-          if (!title && !img && !url) continue; // skip broken items
+        const frag = document.createDocumentFragment();
+        for (const p of slice) {
+          if (!p.title && !p.img && !p.url) continue;
 
           const a = document.createElement('a');
           a.className = 'card';
-          a.href = url || '#'; a.target = '_blank'; a.rel = 'noopener';
+          a.href = p.url || '#'; a.target = '_blank'; a.rel = 'noopener';
           a.setAttribute('role','listitem');
-          a.setAttribute('aria-label', title);
+          a.setAttribute('aria-label', p.title);
 
           const image = document.createElement('img');
-          image.src = img; image.alt = title; image.loading = 'lazy';
+          image.src = p.img; image.alt = p.title; image.loading = 'lazy';
           a.appendChild(image);
 
           const t = document.createElement('div');
           t.className = 'title';
-          t.textContent = title;
+          t.textContent = p.title;
           a.appendChild(t);
 
           const pr = document.createElement('div');
           pr.className = 'price';
-          pr.textContent = fmtPrice(p?.price, p?.currency);
+          pr.textContent = fmtPrice(p.price, p.currency);
           a.appendChild(pr);
 
           frag.appendChild(a);
@@ -367,7 +356,6 @@
         restartTimer = setTimeout(() => startAuto(), ms);
       }
 
-      // Controls / listeners
       prevBtn.addEventListener('click', () => { stopAutoTemporarily(); track.scrollBy({ left: -getStep(), behavior: 'smooth' }); });
       nextBtn.addEventListener('click', () => { stopAutoTemporarily(); ensureMoreIfNearEnd(); track.scrollBy({ left:  getStep(), behavior: 'smooth' }); });
       track.addEventListener('scroll', () => { ensureMoreIfNearEnd(); updateButtons(); }, { passive: true });
@@ -383,9 +371,13 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
 
-        all = (Array.isArray(data.products) ? data.products : []).filter(p =>
-          p && (p.url || p.id) && (p.title || p.img)
-        );
+        // Accept either { products: [...] } OR { items: [...] }
+        const rawList =
+          (Array.isArray(data.products) && data.products) ||
+          (Array.isArray(data.items)    && data.items)    ||
+          [];
+
+        all = rawList.map(normalize).filter(p => p.url || p.title || p.img);
 
         if (!all.length) {
           track.textContent = 'eBay items unavailable right now.';
@@ -393,15 +385,15 @@
           return;
         }
 
-        appendChunk();                         // initial
-        requestIdleCallback?.(() => appendChunk()); // warm second chunk if idle
+        appendChunk();                         // initial render
+        requestIdleCallback?.(() => appendChunk()); // pre-warm another chunk if idle
         startAuto();
       } catch (e) {
         console.error('Failed to load eBay listings:', e);
         track.textContent = 'eBay items unavailable right now.';
       }
 
-      // footer year
+      // footer year + resize hook
       document.getElementById('y').textContent = new Date().getFullYear();
       window.addEventListener('resize', updateButtons, { passive: true });
     });
