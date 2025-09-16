@@ -1,16 +1,21 @@
-=== Filename: index.html ===
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jo’MagicBackpack — Curious Finds · eBay Storefront</title>
-  <meta property="og:title" content="Jo’Magic Backpack – Curated Oddities & Unique Finds" />
-<meta property="og:description" content="A menagerie of vintage and modern treasures, hand-picked daily. Take a peek inside the magic backpack!" />
-<meta property="og:image" content="https://jomagicbackpack.com/assets/social-preview.jpg" />
-<meta property="og:url" content="https://jomagicbackpack.com" />
-<meta property="og:type" content="website" />
-  <meta name="description" content="Jo’MagicBackpack — a menagerie of vintage and new finds. Explore recent eBay listings, hand-picked to outdo the ordinary." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Jo'MagicBackpack — Curious Finds · eBay Storefront</title>
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Jo'Magic Backpack — Curated Oddities & Unique Finds" />
+  <meta property="og:description" content="A menagerie of vintage and modern treasures, hand-picked daily. Take a peek inside the magic backpack!" />
+  <meta property="og:image" content="https://jomagicbackpack.com/assets/social-preview.jpg" />
+  <meta property="og:url" content="https://jomagicbackpack.com" />
+  <meta property="og:type" content="website" />
+
+  <!-- SEO -->
+  <meta name="description" content="Jo'MagicBackpack — a menagerie of vintage and new finds. Explore recent eBay listings, hand-picked to outdo the ordinary." />
+
   <link rel="icon" href="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png" />
   <link rel="preload" as="image" href="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png" />
 
@@ -21,6 +26,7 @@
     *{box-sizing:border-box}html,body{height:100%}html{scroll-behavior:smooth}
     body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
     a{color:var(--accent)}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(125,211,252,.25);border-radius:12px}
+    .hidden{display:none}
     .container{max-width:1100px;margin:auto;padding:0 24px}
     .header{position:sticky;top:0;z-index:50;background:rgba(5,6,10,.85);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.06)}
     .nav{display:flex;align-items:center;gap:16px;padding:14px 0}
@@ -121,19 +127,135 @@
   </main>
 
   <script>
-    (function(){
-      const API='/.netlify/functions/ebay-listings';
-      const el={q:document.getElementById('q'),sort:document.getElementById('sort'),limit:document.getElementById('limit'),
-        refresh:document.getElementById('refresh'),cards:document.getElementById('cards'),errors:document.getElementById('errors'),status:document.getElementById('status')};
+    (function () {
+      const API = "/.netlify/functions/ebay-listings";
+      const el = {
+        q: document.getElementById("q"),
+        sort: document.getElementById("sort"),
+        limit: document.getElementById("limit"),
+        refresh: document.getElementById("refresh"),
+        cards: document.getElementById("cards"),
+        errors: document.getElementById("errors"),
+        status: document.getElementById("status"),
+      };
 
-      function setBusy(b){el.status.textContent=b?'Loading…':'Ready'}
-      function showError(msg){el.errors.textContent=msg;el.errors.classList.remove('hidden')}
-      function clearError(){el.errors.textContent='';el.errors.classList.add('hidden')}
-      function skeletons(n=12){el.cards.innerHTML='';for(let i=0;i<n;i++){const sk=document.createElement('article');sk.className='card skel-card skeleton';el.cards.appendChild(sk)}}
-      function priceText(p){if(!p)return'';const [c,...r]=p.split(' ');return new Intl.NumberFormat(undefined,{style:'currency',currency:c||'USD'}).format(+r.join(' '))}
-      function card(it){const a=document.createElement('article');a.className='card';const t=document.createElement('div');t.className='thumb';const im=document.createElement('img');im.loading='lazy';im.alt=it.title;im.src=it.image||'';t.appendChild(im);const cond=document.createElement('span');cond.className='condition';cond.textContent=it.condition; t.appendChild(cond);const b=document.createElement('div');b.className='card-body';const h=document.createElement('div');h.className='title';h.textContent=it.title;b.appendChild(h);const m=document.createElement('div');m.className='meta';const p=document.createElement('strong');p.className='price';p.textContent=priceText(it.price);m.appendChild(p);b.appendChild(m);const ac=document.createElement('div');ac.className='card-actions';const v=document.createElement('a');v.className='view-btn';v.href=it.url;v.target='_blank';v.textContent='View on eBay';ac.appendChild(v);const buy=document.createElement('a');buy.className='buy-btn';buy.href=it.url;buy.target='_blank';buy.textContent='Buy';ac.appendChild(buy);a.append(t,b,ac);return a}
-      async function fetchItems(){clearError();setBusy(true);try{const qs=new URLSearchParams({q:el.q.value,limit:el.limit.value,sort:el.sort.value});const r=await fetch(`${API}?${qs}`);const d=await r.json();el.cards.innerHTML='';(d.result.items||[]).forEach(it=>el.cards.appendChild(card(it)));el.status.textContent=`Showing ${d.result.items.length} items`}catch(e){showError(e.message)}finally{setBusy(false)}}
-      el.refresh.addEventListener('click',()=>{skeletons();fetchItems()});skeletons();fetchItems();
+      function setBusy(b) { el.status.textContent = b ? "Loading…" : "Ready"; }
+      function showError(msg) { el.errors.textContent = msg; el.errors.classList.remove("hidden"); }
+      function clearError() { el.errors.textContent = ""; el.errors.classList.add("hidden"); }
+      function skeletons(n = 12) {
+        el.cards.innerHTML = "";
+        for (let i = 0; i < n; i++) {
+          const sk = document.createElement("article");
+          sk.className = "card skel-card skeleton";
+          el.cards.appendChild(sk);
+        }
+      }
+      function priceText(p) {
+        if (!p) return "";
+        // Accept "USD 19.99" or just "19.99"
+        const parts = String(p).trim().split(/\s+/);
+        const amount = parseFloat(parts.pop());
+        const currency = parts.pop() || "USD";
+        if (isNaN(amount)) return "";
+        return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+      }
+      function card(it) {
+        const a = document.createElement("article");
+        a.className = "card";
+
+        const t = document.createElement("div");
+        t.className = "thumb";
+        const im = document.createElement("img");
+        im.loading = "lazy";
+        im.alt = it.title || "";
+        im.src = it.image || "";
+        t.appendChild(im);
+
+        if (it.condition) {
+          const cond = document.createElement("span");
+          cond.className = "condition";
+          cond.textContent = it.condition;
+          t.appendChild(cond);
+        }
+
+        const b = document.createElement("div");
+        b.className = "card-body";
+        const h = document.createElement("div");
+        h.className = "title";
+        h.textContent = it.title || "Untitled";
+        b.appendChild(h);
+
+        const m = document.createElement("div");
+        m.className = "meta";
+        const p = document.createElement("strong");
+        p.className = "price";
+        p.textContent = priceText(it.price);
+        m.appendChild(p);
+        b.appendChild(m);
+
+        const ac = document.createElement("div");
+        ac.className = "card-actions";
+        const v = document.createElement("a");
+        v.className = "view-btn";
+        v.href = it.url || "#";
+        v.target = "_blank";
+        v.rel = "noopener";
+        v.textContent = "View on eBay";
+        ac.appendChild(v);
+
+        const buy = document.createElement("a");
+        buy.className = "buy-btn";
+        buy.href = it.url || "#";
+        buy.target = "_blank";
+        buy.rel = "noopener";
+        buy.textContent = "Buy";
+        ac.appendChild(buy);
+
+        a.append(t, b, ac);
+        return a;
+      }
+
+      function extractItems(d) {
+        // Accept d.result.items, d.items, or a plain array
+        if (Array.isArray(d)) return d;
+        if (d && Array.isArray(d.items)) return d.items;
+        if (d && d.result && Array.isArray(d.result.items)) return d.result.items;
+        return [];
+      }
+
+      async function fetchItems() {
+        clearError(); setBusy(true); skeletons(parseInt(el.limit.value, 10) || 12);
+        try {
+          const qs = new URLSearchParams({
+            q: el.q.value || "",
+            limit: el.limit.value || "12",
+            sort: el.sort.value || "new",
+          });
+          const r = await fetch(`${API}?${qs.toString()}`, { cache: "no-store" });
+          if (!r.ok) throw new Error(`Network error (${r.status})`);
+          const d = await r.json();
+          const items = extractItems(d);
+
+          el.cards.innerHTML = "";
+          if (items.length === 0) {
+            const n = document.createElement("div");
+            n.className = "notice";
+            n.textContent = "No items to display yet.";
+            el.cards.appendChild(n);
+          } else {
+            items.forEach(it => el.cards.appendChild(card(it)));
+          }
+          el.status.textContent = `Showing ${items.length} item${items.length === 1 ? "" : "s"}`;
+        } catch (e) {
+          showError(e.message || "Could not load listings.");
+          console.error(e);
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      el.refresh.addEventListener("click", () => fetchItems());
+      fetchItems();
     })();
   </script>
 </body>
