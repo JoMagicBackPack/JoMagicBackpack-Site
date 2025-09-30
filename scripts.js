@@ -96,19 +96,20 @@ setInterval(() => {
 
 const MAX_DOTS = 12; // cap dots for mobile sanity
 
+const MAX_DOTS = 12; // only show 12 dots even if 30 reviews
 dotsContainer.innerHTML = '';
+
 slides.forEach((_, idx) => {
-  if (idx >= MAX_DOTS) return; // don't render more than MAX_DOTS
+  if (idx >= MAX_DOTS) return; // stop after 12
   const dot = document.createElement('button');
   dot.className = 'jf-dot';
   if (idx === 0) dot.classList.add('is-active');
   dot.addEventListener('click', () => {
-    currentIndex = Math.min(idx, slides.length - 1);
+    currentIndex = idx;
     update();
   });
   dotsContainer.appendChild(dot);
 });
-
     let currentIndex = 0;
 
     function update() {
