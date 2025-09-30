@@ -6,10 +6,7 @@
   <title>Jo’Magic Backpack</title>
   <meta name="description" content="Jo’Magic Backpack — a menagerie of vintage + new finds." />
   <link rel="icon" href="Assets/brand-logo.png?v=2" />
-
-  <!-- keep your combined styles here exactly as you had -->
-  <!-- (I’m not repeating the <style> block to keep this reply short) -->
-  <!-- Paste the updated CSS you already have in your file. -->
+  <link rel="stylesheet" href="/style.css?v=4">
 </head>
 <body>
   <main class="wrap">
@@ -54,9 +51,7 @@
       </header>
 
       <div class="jf-viewport" role="region" aria-roledescription="carousel" aria-label="Buyer testimonials">
-        <!-- IMPORTANT: leave the track EMPTY; scripts.js will fill it -->
         <ul class="jf-track" id="jfTrack"></ul>
-
         <div class="jf-controls">
           <button class="jf-btn" id="jfPrev" aria-label="Previous">‹</button>
           <div class="jf-dots" id="jfDots"></div>
@@ -72,18 +67,6 @@
     </footer>
   </main>
 
-  <!-- Reviews Carousel JS (single source of truth) -->
-  <script src="scripts.js"></script>
-
-  <!-- Live eBay Products Carousel JS (keep your existing code here) -->
-  <script>
-    /* your full products carousel JS from your current file goes here unchanged */
-    /* (You pasted it above—keep that block intact.) */
-  </script>
-
-  <script>
-    // footer year
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
+  <script src="/scripts.js?v=4"></script>
 </body>
 </html>
