@@ -12,19 +12,16 @@ setInterval(() => {
   quoteEl.textContent = "“" + quotes[i] + "”";
 }, 4000);
 
-// ----- reviews carousel (rewritten) -----
+// ----- reviews carousel -----
 (async () => {
   try {
-    // Ask the backend for as many as you want (backend now paginates & returns seller-only)
     const DESIRED_COUNT = 30;
     const res = await fetch(`/.netlify/functions/ebay-feedback?limit=${DESIRED_COUNT}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw = await res.json();
-
-    // Basic guards
     if (!Array.isArray(raw)) throw new Error("Bad payload: expected array");
 
-    // Front-end safety de-dup (backend already tries, but belt & suspenders)
+    // De-dupe + normalize
     const seen = new Set();
     const unique = [];
     for (const r of raw) {
@@ -35,7 +32,12 @@ setInterval(() => {
       const key = `${comment}::${user}::${date}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      unique.push({ comment, user, date, rating: r.rating || "", itemTitle: r.itemTitle || "", itemID: r.itemID || "" });
+      unique.push({
+        comment, user, date,
+        rating: r.rating || "",
+        itemTitle: r.itemTitle || "",
+        itemID: r.itemID || ""
+      });
       if (unique.length >= DESIRED_COUNT) break;
     }
 
@@ -49,7 +51,7 @@ setInterval(() => {
       return db - da;
     });
 
-    // Build DOM (keeps your existing structure/classes)
+    // Build DOM
     const track = document.getElementById("jfTrack");
     const dotsContainer = document.getElementById("jfDots");
     const prev = document.getElementById("jfPrev");
@@ -77,7 +79,6 @@ setInterval(() => {
       strong.textContent = review.user || "eBay buyer";
 
       const span = document.createElement("span");
-      // Pretty date if parseable; else use raw
       let niceDate = review.date;
       const parsed = Date.parse(review.date || "");
       if (!isNaN(parsed)) niceDate = formatter.format(new Date(parsed));
@@ -92,24 +93,24 @@ setInterval(() => {
       track.appendChild(li);
     });
 
-    // ...after: const slides = Array.from(track.children);
+    // Slides list (this was missing)
+    const slides = Array.from(track.children);
 
-const MAX_DOTS = 12; // cap dots for mobile sanity
+    // Dots (cap to keep mobile tidy)
+    const MAX_DOTS = 12;
+    dotsContainer.innerHTML = "";
+    slides.forEach((_, idx) => {
+      if (idx >= MAX_DOTS) return;
+      const dot = document.createElement("button");
+      dot.className = "jf-dot";
+      if (idx === 0) dot.classList.add("is-active");
+      dot.addEventListener("click", () => {
+        currentIndex = idx;
+        update();
+      });
+      dotsContainer.appendChild(dot);
+    });
 
-const MAX_DOTS = 12; // only show 12 dots even if 30 reviews
-dotsContainer.innerHTML = '';
-
-slides.forEach((_, idx) => {
-  if (idx >= MAX_DOTS) return; // stop after 12
-  const dot = document.createElement('button');
-  dot.className = 'jf-dot';
-  if (idx === 0) dot.classList.add('is-active');
-  dot.addEventListener('click', () => {
-    currentIndex = idx;
-    update();
-  });
-  dotsContainer.appendChild(dot);
-});
     let currentIndex = 0;
 
     function update() {
