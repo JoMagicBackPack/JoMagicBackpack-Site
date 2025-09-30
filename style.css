@@ -28,34 +28,16 @@ h1 {
   max-width: 600px;
 }
 
-.store-link {
-  color: #00c8ff;
-  text-decoration: none;
-  font-weight: bold;
-}
+.store-link { color: #00c8ff; text-decoration: none; font-weight: bold; }
 .store-link:hover { text-decoration: underline; }
 
 /* ---------- Header / Branding ---------- */
-.site-header {
-  text-align: center;
-  margin-top: 20px;
-}
-.site-logo {
-  max-width: 220px;
-  height: auto;
-}
-.mission {
-  text-align: center;
-  font-size: 1.2rem;
-  margin: 15px 0;
-  color: #ccc;
-}
+.site-header { text-align: center; margin-top: 20px; }
+.site-logo { max-width: 220px; height: auto; }
+.mission { text-align: center; font-size: 1.2rem; margin: 15px 0; color: #ccc; }
 
 /* ---------- Navigation ---------- */
-.nav-links {
-  text-align: center;
-  margin: 10px 0 30px 0;
-}
+.nav-links { text-align: center; margin: 10px 0 30px 0; }
 .nav-links a {
   margin: 0 15px;
   text-decoration: none;
@@ -69,21 +51,18 @@ h1 {
   display: inline-flex;
   align-items: center;
   background: #0064d2;
-  color: white;
+  color: #fff;
   font-weight: bold;
   padding: 10px 16px;
   border-radius: 6px;
   text-decoration: none;
-  transition: background 0.2s ease;
+  transition: background .2s ease;
 }
 .btn-ebay:hover { background: #0052a3; }
 .btn-ebay .ebay-logo { height: 20px; margin-right: 8px; }
 .btn .ebay-logo {
-  height: 28px;
-  width: auto;
-  margin-right: 10px;
-  vertical-align: middle;
-  display: inline-block;
+  height: 28px; width: auto; margin-right: 10px;
+  vertical-align: middle; display: inline-block;
 }
 
 /* ===== Reviews Carousel (jf*) ===== */
@@ -91,16 +70,16 @@ h1 {
 /* Track holds slides; show one at a time */
 #jfTrack {
   position: relative;
-  overflow: hidden;        /* no vertical stacking overflow */
+  overflow: hidden;              /* prevent vertical stacking bleed */
   list-style: none;
   padding: 0;
   margin: 0 auto;
   max-width: 720px;
 }
 
-/* Hide all slides; show only active */
-#jfTrack .jf-slide { display: none; margin: 0; padding: 0; }
-#jfTrack .jf-slide.is-active { display: block; }
+/* Hide all slides; show only active (force with !important) */
+#jfTrack .jf-slide { display: none !important; margin: 0; padding: 0; }
+#jfTrack .jf-slide.is-active { display: block !important; }
 
 /* Review card look */
 .jf-card {
@@ -115,30 +94,32 @@ h1 {
 .jf-quote { font-size: 1.05rem; line-height: 1.5; margin: 0 0 10px; }
 .jf-meta  { color: #b9c0c8; font-size: 0.9rem; margin: 0; }
 
-/* Arrows */
+/* Arrow buttons */
 #jfPrev, #jfNext {
   appearance: none;
+  -webkit-appearance: none;
   background: #22262b;
   color: #e8f4ff;
   border: 1px solid rgba(255,255,255,0.1);
   width: 40px; height: 40px; border-radius: 50%;
   cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  margin: 10px 6px 0; transition: transform .15s, background .2s;
+  margin: 10px 6px 0;
+  transition: transform .15s, background .2s;
 }
 #jfPrev:hover, #jfNext:hover { background: #2c3238; transform: translateY(-1px); }
 
 /* Dots: wrap AND allow horizontal scroll as fallback */
 #jfDots {
-  display: flex;
-  flex-wrap: wrap;           /* wraps to next row on tiny screens */
+  display: flex !important;
+  flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
   align-items: center;
   max-width: 92vw;
   margin: 10px auto 0;
   padding: 0 8px;
-  overflow-x: auto;          /* users can swipe if still too many */
+  overflow-x: auto;                 /* swipe if still many */
   -webkit-overflow-scrolling: touch;
 }
 
@@ -146,14 +127,23 @@ h1 {
 #jfDots::-webkit-scrollbar { display: none; }
 #jfDots { scrollbar-width: none; }
 
-/* Dot style */
+/* Dot style (neutralize default button styles) */
 #jfDots .jf-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  border: none; background: #98b7cc; opacity: .35;
-  cursor: pointer; transition: opacity .2s, transform .1s;
-  flex: 0 0 auto;           /* don’t stretch */
+  appearance: none; -webkit-appearance: none;
+  background: #98b7cc;
+  border: none;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  opacity: .35;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+  flex: 0 0 auto;                  /* don't stretch */
+  padding: 0;                      /* remove iOS default padding */
 }
 #jfDots .jf-dot.is-active { opacity: 1; transform: scale(1.12); }
+
+/* Ensure dots don’t sit under the card’s rounded border */
+#jfDots, #jfPrev, #jfNext { z-index: 2; position: relative; }
 
 @media (min-width: 768px) {
   .jf-card { padding: 22px 20px; }
