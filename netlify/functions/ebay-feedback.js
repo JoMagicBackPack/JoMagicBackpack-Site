@@ -1,23 +1,22 @@
-// Netlify function: returns up to `limit` distinct seller feedback entries
+// netlify/functions/ebay-feedback.js
 // Usage: /.netlify/functions/ebay-feedback?limit=30
 const { parseStringPromise } = require('xml2js');
 
-// Required env vars (Netlify -> Site settings -> Environment):
-// EBAY_APP_ID, EBAY_CERT_ID, EBAY_DEV_ID, EBAY_USER_TOKEN
-const EBAY_APP_ID   = process.env.EBAY_APP_ID;
-const EBAY_CERT_ID  = process.env.EBAY_CERT_ID;
-const EBAY_DEV_ID   = process.env.EBAY_DEV_ID;
+const EBAY_APP_ID = process.env.EBAY_APP_ID;
+const EBAY_CERT_ID = process.env.EBAY_CERT_ID;
+const EBAY_DEV_ID  = process.env.EBAY_DEV_ID;
 const EBAY_USER_TOKEN = process.env.EBAY_USER_TOKEN;
 
 exports.handler = async (event) => {
   try {
     const LIMIT = Math.min(parseInt(event.queryStringParameters?.limit || '30', 10), 50);
-    const ENTRIES_PER_PAGE = Math.min(LIMIT, 25); // Trading API practical page size ~25
+    const ENTRIES_PER_PAGE = Math.min(LIMIT, 25);
     let page = 1;
     const out = [];
     const seen = new Set();
+    let totalPages = null;
 
-    while (out.length < LIMIT && page <= 10) { // hard stop to avoid infinite loops
+    while (out.length < LIMIT) {
       const xmlBody = `<?xml version="1.0" encoding="utf-8"?>
 <GetFeedbackRequest xmlns="urn:ebay:apis:eBLBaseComponents">
   <RequesterCredentials>
@@ -53,31 +52,39 @@ exports.handler = async (event) => {
       const xml = await res.text();
       const json = await parseStringPromise(xml, { explicitArray: false });
 
+      // total pages (if provided)
+      const pr = json?.GetFeedbackResponse?.PaginationResult;
+      if (pr?.TotalNumberOfPages) {
+        const n = parseInt(pr.TotalNumberOfPages, 10);
+        if (!isNaN(n)) totalPages = n;
+      }
+
       const raw = json?.GetFeedbackResponse?.FeedbackDetailArray?.FeedbackDetail ?? [];
       const entries = Array.isArray(raw) ? raw : (raw ? [raw] : []);
 
-      // Collect distinct entries
       for (const fb of entries) {
-        if (!fb?.CommentText) continue;
-        const item = {
-          comment: fb.CommentText,
-          user: fb.CommentingUser,
-          date: fb.CommentTime,
-          rating: fb.CommentType,        // Positive | Neutral | Negative
-          itemTitle: fb.ItemTitle || '',
-          itemID: fb.ItemID || ''
-        };
-        const key = `${item.comment}::${item.user}::${item.date}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          out.push(item);
-        }
+        const comment = (fb?.CommentText || '').trim();
+        if (!comment) continue;
+        const user = (fb?.CommentingUser || '').trim();
+        const date = (fb?.CommentTime || '').trim();
+        const itemTitle = fb?.ItemTitle || '';
+        const itemID = fb?.ItemID || '';
+        const rating = fb?.CommentType || ''; // Positive/Neutral/Negative
+
+        const key = `${comment}::${user}::${date}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        out.push({ comment, user, date, rating, itemTitle, itemID });
         if (out.length >= LIMIT) break;
       }
 
-      // Stop if the page returned fewer than requested (no more pages)
-      if (entries.length < ENTRIES_PER_PAGE) break;
+      // stop if we've reached the end
+      const reachedLastPage = totalPages ? page >= totalPages : entries.length < ENTRIES_PER_PAGE;
+      if (out.length >= LIMIT || reachedLastPage) break;
+
       page += 1;
+      if (page > 50) break; // hard safety cap
     }
 
     return {
