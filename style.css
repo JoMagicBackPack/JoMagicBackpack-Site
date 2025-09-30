@@ -1,74 +1,70 @@
+/* ---------- Base ---------- */
 body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #1a1a1a;
-    color: #f5f5f5;
-    text-align: center;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #1a1a1a;
+  color: #f5f5f5;
+  text-align: center;
 }
-header {
-    margin-top: 40px;
-}
-.logo {
-    width: 150px;
-}
+
+header { margin-top: 40px; }
+.logo { width: 150px; }
+
 h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
 }
+
 .quote-carousel blockquote {
-    font-style: italic;
-    margin: 30px auto;
-    font-size: 1.25rem;
-    max-width: 600px;
+  font-style: italic;
+  margin: 30px auto;
+  font-size: 1.25rem;
+  max-width: 600px;
 }
+
 .intro p {
-    font-size: 1.1rem;
-    margin: 20px auto;
-    max-width: 600px;
+  font-size: 1.1rem;
+  margin: 20px auto;
+  max-width: 600px;
 }
+
 .store-link {
-    color: #00c8ff;
-    text-decoration: none;
-    font-weight: bold;
+  color: #00c8ff;
+  text-decoration: none;
+  font-weight: bold;
 }
-.store-link:hover {
-    text-decoration: underline;
-}
-/* Header Logo */
+.store-link:hover { text-decoration: underline; }
+
+/* ---------- Header / Branding ---------- */
 .site-header {
   text-align: center;
   margin-top: 20px;
 }
-
 .site-logo {
-  max-width: 220px;   /* adjust size of your logo */
+  max-width: 220px;
   height: auto;
 }
-
-/* Mission statement */
 .mission {
   text-align: center;
   font-size: 1.2rem;
   margin: 15px 0;
-  color: #ccc; /* adjust if you want */
+  color: #ccc;
 }
 
-/* Navigation links */
+/* ---------- Navigation ---------- */
 .nav-links {
   text-align: center;
   margin: 10px 0 30px 0;
 }
-
 .nav-links a {
   margin: 0 15px;
   text-decoration: none;
   font-weight: bold;
-  color: #66ccff; /* same palette as logo */
+  color: #66ccff;
 }
+.nav-links a:hover { text-decoration: underline; }
 
-.nav-links a:hover {
-  text-decoration: underline;
-}
+/* ---------- Buttons ---------- */
 .btn-ebay {
   display: inline-flex;
   align-items: center;
@@ -80,19 +76,110 @@ h1 {
   text-decoration: none;
   transition: background 0.2s ease;
 }
-
-.btn-ebay:hover {
-  background: #0052a3;
-}
-
-.btn-ebay .ebay-logo {
-  height: 20px;
-  margin-right: 8px;
-}
+.btn-ebay:hover { background: #0052a3; }
+.btn-ebay .ebay-logo { height: 20px; margin-right: 8px; }
 .btn .ebay-logo {
-  height: 28px;       /* adjust size */
+  height: 28px;
   width: auto;
   margin-right: 10px;
   vertical-align: middle;
   display: inline-block;
+}
+
+/* =========================================================
+   Reviews Carousel (jf*)
+   - shows only the active slide
+   - wraps dots so they don’t overflow on mobile
+   ========================================================= */
+
+/* Track holds slides; hide overflow so only one card shows */
+#jfTrack {
+  position: relative;
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 720px;        /* keep cards nicely centered */
+}
+
+/* Hide all slides by default */
+#jfTrack .jf-slide { display: none; }
+
+/* Show only the active one */
+#jfTrack .jf-slide.is-active { display: block; }
+
+/* Review card styling */
+.jf-card {
+  background: #0f0f10;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 18px;
+  margin: 0 14px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+  text-align: left;
+}
+.jf-quote {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+.jf-meta {
+  color: #b9c0c8;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Prev/Next arrows (if you’re using buttons with these IDs) */
+#jfPrev, #jfNext {
+  appearance: none;
+  background: #22262b;
+  color: #e8f4ff;
+  border: 1px solid rgba(255,255,255,0.1);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 6px 0;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+#jfPrev:hover, #jfNext:hover {
+  background: #2c3238;
+  transform: translateY(-1px);
+}
+
+/* Dots container: wrap so 30 dots don’t overflow on phones */
+#jfDots {
+  display: flex;
+  flex-wrap: wrap;       /* allow multiple rows */
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  max-width: 90vw;
+  margin: 12px auto 0;
+  padding: 0 8px;
+}
+
+/* Individual dot */
+#jfDots .jf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: #98b7cc;
+  opacity: 0.35;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+#jfDots .jf-dot.is-active {
+  opacity: 1;
+  transform: scale(1.12);
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (min-width: 768px) {
+  .jf-card { padding: 24px 22px; }
+  .jf-quote { font-size: 1.1rem; }
+  #jfDots { max-width: 680px; }
 }
