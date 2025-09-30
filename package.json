@@ -1,0 +1,13 @@
+{
+  "name": "jomagicbackpack-site",
+  "version": "1.0.0",
+  "description": "JoMagicBackpack site with Netlify functions",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "echo \"No build step\""
+  },
+  "dependencies": {
+    "xml2js": "^0.6.2"
+  }
+}
