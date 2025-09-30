@@ -1,59 +1,106 @@
+// ----- rotating quotes (unchanged) -----
 const quotes = [
-    "Curiosity packed, wonder unpacked.",
-    "No algorithms, just instinct.",
-    "A place for the curious and the uncommon.",
-    "Handpicked oddities, packed with care.",
+  "Curiosity packed, wonder unpacked.",
+  "No algorithms, just instinct.",
+  "A place for the curious and the uncommon.",
+  "Handpicked oddities, packed with care.",
 ];
 let i = 0;
 const quoteEl = document.getElementById("quote");
 setInterval(() => {
-    i = (i + 1) % quotes.length;
-    quoteEl.textContent = "“" + quotes[i] + "”";
+  i = (i + 1) % quotes.length;
+  quoteEl.textContent = "“" + quotes[i] + "”";
 }, 4000);
 
-
+// ----- reviews carousel (rewritten) -----
 (async () => {
   try {
-    const res = await fetch('/.netlify/functions/ebay-feedback?limit=40');
-    const reviews = await res.json();
-    const track = document.getElementById('jfTrack');
-    const dotsContainer = document.getElementById('jfDots');
-    const prev = document.getElementById('jfPrev');
-    const next = document.getElementById('jfNext');
+    // Ask the backend for as many as you want (backend now paginates & returns seller-only)
+    const DESIRED_COUNT = 30;
+    const res = await fetch(`/.netlify/functions/ebay-feedback?limit=${DESIRED_COUNT}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const raw = await res.json();
 
+    // Basic guards
+    if (!Array.isArray(raw)) throw new Error("Bad payload: expected array");
+
+    // Front-end safety de-dup (backend already tries, but belt & suspenders)
+    const seen = new Set();
+    const unique = [];
+    for (const r of raw) {
+      const comment = (r.comment || "").trim();
+      const user = (r.user || r.fromUser || "").trim();
+      const date = (r.date || "").trim();
+      if (!comment) continue;
+      const key = `${comment}::${user}::${date}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push({ comment, user, date, rating: r.rating || "", itemTitle: r.itemTitle || "", itemID: r.itemID || "" });
+      if (unique.length >= DESIRED_COUNT) break;
+    }
+
+    // Sort newest first if dates parse
+    unique.sort((a, b) => {
+      const da = Date.parse(a.date || "");
+      const db = Date.parse(b.date || "");
+      if (isNaN(da) && isNaN(db)) return 0;
+      if (isNaN(da)) return 1;
+      if (isNaN(db)) return -1;
+      return db - da;
+    });
+
+    // Build DOM (keeps your existing structure/classes)
+    const track = document.getElementById("jfTrack");
+    const dotsContainer = document.getElementById("jfDots");
+    const prev = document.getElementById("jfPrev");
+    const next = document.getElementById("jfNext");
     if (!track || !dotsContainer || !prev || !next) return;
 
-    track.innerHTML = '';
-    reviews.forEach((review) => {
-      const li = document.createElement('li');
-      li.className = 'jf-slide';
-      const card = document.createElement('div');
-      card.className = 'jf-card';
-      const quoteEl = document.createElement('p');
-      quoteEl.className = 'jf-quote';
-      quoteEl.textContent = '"' + review.comment + '"';
-      const metaEl = document.createElement('p');
-      metaEl.className = 'jf-meta';
-      const strong = document.createElement('strong');
-      strong.textContent = review.user;
-      const span = document.createElement('span');
-      span.textContent = ' · ' + review.date;
-      metaEl.appendChild(strong);
-      metaEl.appendChild(span);
-      card.appendChild(quoteEl);
-      card.appendChild(metaEl);
+    track.innerHTML = "";
+    const formatter = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
+
+    unique.forEach((review) => {
+      const li = document.createElement("li");
+      li.className = "jf-slide";
+
+      const card = document.createElement("div");
+      card.className = "jf-card";
+
+      const pQuote = document.createElement("p");
+      pQuote.className = "jf-quote";
+      pQuote.textContent = `“${review.comment}”`;
+
+      const pMeta = document.createElement("p");
+      pMeta.className = "jf-meta";
+
+      const strong = document.createElement("strong");
+      strong.textContent = review.user || "eBay buyer";
+
+      const span = document.createElement("span");
+      // Pretty date if parseable; else use raw
+      let niceDate = review.date;
+      const parsed = Date.parse(review.date || "");
+      if (!isNaN(parsed)) niceDate = formatter.format(new Date(parsed));
+      span.textContent = niceDate ? ` · ${niceDate}` : "";
+
+      pMeta.appendChild(strong);
+      pMeta.appendChild(span);
+
+      card.appendChild(pQuote);
+      card.appendChild(pMeta);
       li.appendChild(card);
       track.appendChild(li);
     });
 
     const slides = Array.from(track.children);
 
-    dotsContainer.innerHTML = '';
+    // Dots
+    dotsContainer.innerHTML = "";
     slides.forEach((_, idx) => {
-      const dot = document.createElement('button');
-      dot.className = 'jf-dot';
-      if (idx === 0) dot.classList.add('is-active');
-      dot.addEventListener('click', () => {
+      const dot = document.createElement("button");
+      dot.className = "jf-dot";
+      if (idx === 0) dot.classList.add("is-active");
+      dot.addEventListener("click", () => {
         currentIndex = idx;
         update();
       });
@@ -64,39 +111,33 @@ setInterval(() => {
 
     function update() {
       slides.forEach((slide, index) => {
-        if (index === currentIndex) {
-          slide.classList.add('is-active');
-        } else {
-          slide.classList.remove('is-active');
-        }
+        slide.classList.toggle("is-active", index === currentIndex);
       });
-      const dots = dotsContainer.querySelectorAll('.jf-dot');
+      const dots = dotsContainer.querySelectorAll(".jf-dot");
       dots.forEach((dot, index) => {
-        if (index === currentIndex) {
-          dot.classList.add('is-active');
-        } else {
-          dot.classList.remove('is-active');
-        }
+        dot.classList.toggle("is-active", index === currentIndex);
       });
     }
 
-    prev.addEventListener('click', () => {
+    prev.addEventListener("click", () => {
       currentIndex = (currentIndex - 1 + slides.length) % slides.length;
       update();
     });
 
-    next.addEventListener('click', () => {
+    next.addEventListener("click", () => {
       currentIndex = (currentIndex + 1) % slides.length;
       update();
     });
 
-    setInterval(() => {
-      currentIndex = (currentIndex + 1) % slides.length;
-      update();
-    }, 5000);
+    if (slides.length > 1) {
+      setInterval(() => {
+        currentIndex = (currentIndex + 1) % slides.length;
+        update();
+      }, 5000);
+    }
 
     update();
   } catch (err) {
-    console.error('Error loading reviews:', err);
+    console.error("Error loading reviews:", err);
   }
 })();
