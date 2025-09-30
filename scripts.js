@@ -92,20 +92,22 @@ setInterval(() => {
       track.appendChild(li);
     });
 
-    const slides = Array.from(track.children);
+    // ...after: const slides = Array.from(track.children);
 
-    // Dots
-    dotsContainer.innerHTML = "";
-    slides.forEach((_, idx) => {
-      const dot = document.createElement("button");
-      dot.className = "jf-dot";
-      if (idx === 0) dot.classList.add("is-active");
-      dot.addEventListener("click", () => {
-        currentIndex = idx;
-        update();
-      });
-      dotsContainer.appendChild(dot);
-    });
+const MAX_DOTS = 12; // cap dots for mobile sanity
+
+dotsContainer.innerHTML = '';
+slides.forEach((_, idx) => {
+  if (idx >= MAX_DOTS) return; // don't render more than MAX_DOTS
+  const dot = document.createElement('button');
+  dot.className = 'jf-dot';
+  if (idx === 0) dot.classList.add('is-active');
+  dot.addEventListener('click', () => {
+    currentIndex = Math.min(idx, slides.length - 1);
+    update();
+  });
+  dotsContainer.appendChild(dot);
+});
 
     let currentIndex = 0;
 
