@@ -86,100 +86,77 @@ h1 {
   display: inline-block;
 }
 
-/* =========================================================
-   Reviews Carousel (jf*)
-   - shows only the active slide
-   - wraps dots so they don’t overflow on mobile
-   ========================================================= */
+/* ===== Reviews Carousel (jf*) ===== */
 
-/* Track holds slides; hide overflow so only one card shows */
+/* Track holds slides; show one at a time */
 #jfTrack {
   position: relative;
-  overflow: hidden;
+  overflow: hidden;        /* no vertical stacking overflow */
   list-style: none;
   padding: 0;
   margin: 0 auto;
-  max-width: 720px;        /* keep cards nicely centered */
+  max-width: 720px;
 }
 
-/* Hide all slides by default */
-#jfTrack .jf-slide { display: none; }
-
-/* Show only the active one */
+/* Hide all slides; show only active */
+#jfTrack .jf-slide { display: none; margin: 0; padding: 0; }
 #jfTrack .jf-slide.is-active { display: block; }
 
-/* Review card styling */
+/* Review card look */
 .jf-card {
   background: #0f0f10;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
-  padding: 20px 18px;
-  margin: 0 14px;
+  padding: 18px 16px;
+  margin: 0 10px;
   box-shadow: 0 8px 18px rgba(0,0,0,0.35);
   text-align: left;
 }
-.jf-quote {
-  font-size: 1.05rem;
-  line-height: 1.5;
-  margin: 0 0 10px 0;
-}
-.jf-meta {
-  color: #b9c0c8;
-  font-size: 0.9rem;
-  margin: 0;
-}
+.jf-quote { font-size: 1.05rem; line-height: 1.5; margin: 0 0 10px; }
+.jf-meta  { color: #b9c0c8; font-size: 0.9rem; margin: 0; }
 
-/* Prev/Next arrows (if you’re using buttons with these IDs) */
+/* Arrows */
 #jfPrev, #jfNext {
   appearance: none;
   background: #22262b;
   color: #e8f4ff;
   border: 1px solid rgba(255,255,255,0.1);
-  width: 40px; height: 40px;
-  border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 50%;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 12px 6px 0;
-  transition: transform 0.15s ease, background 0.2s ease;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin: 10px 6px 0; transition: transform .15s, background .2s;
 }
-#jfPrev:hover, #jfNext:hover {
-  background: #2c3238;
-  transform: translateY(-1px);
-}
+#jfPrev:hover, #jfNext:hover { background: #2c3238; transform: translateY(-1px); }
 
-/* Dots container: wrap so 30 dots don’t overflow on phones */
+/* Dots: wrap AND allow horizontal scroll as fallback */
 #jfDots {
   display: flex;
-  flex-wrap: wrap;       /* allow multiple rows */
+  flex-wrap: wrap;           /* wraps to next row on tiny screens */
   gap: 6px;
   justify-content: center;
   align-items: center;
-  max-width: 90vw;
-  margin: 12px auto 0;
+  max-width: 92vw;
+  margin: 10px auto 0;
   padding: 0 8px;
+  overflow-x: auto;          /* users can swipe if still too many */
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Individual dot */
+/* Hide scrollbars (optional) */
+#jfDots::-webkit-scrollbar { display: none; }
+#jfDots { scrollbar-width: none; }
+
+/* Dot style */
 #jfDots .jf-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  background: #98b7cc;
-  opacity: 0.35;
-  cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  width: 8px; height: 8px; border-radius: 50%;
+  border: none; background: #98b7cc; opacity: .35;
+  cursor: pointer; transition: opacity .2s, transform .1s;
+  flex: 0 0 auto;           /* don’t stretch */
 }
-#jfDots .jf-dot.is-active {
-  opacity: 1;
-  transform: scale(1.12);
-}
+#jfDots .jf-dot.is-active { opacity: 1; transform: scale(1.12); }
 
-/* ---------- Responsive tweaks ---------- */
 @media (min-width: 768px) {
-  .jf-card { padding: 24px 22px; }
+  .jf-card { padding: 22px 20px; }
   .jf-quote { font-size: 1.1rem; }
   #jfDots { max-width: 680px; }
 }
