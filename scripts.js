@@ -1,4 +1,4 @@
-// ----- rotating quotes (unchanged) -----
+// ----- rotating quotes -----
 const quotes = [
   "Curiosity packed, wonder unpacked.",
   "No algorithms, just instinct.",
@@ -7,10 +7,12 @@ const quotes = [
 ];
 let i = 0;
 const quoteEl = document.getElementById("quote");
-setInterval(() => {
-  i = (i + 1) % quotes.length;
-  quoteEl.textContent = "“" + quotes[i] + "”";
-}, 4000);
+if (quoteEl) {
+  setInterval(() => {
+    i = (i + 1) % quotes.length;
+    quoteEl.textContent = "“" + quotes[i] + "”";
+  }, 4000);
+}
 
 // ----- reviews carousel -----
 (async () => {
@@ -19,9 +21,8 @@ setInterval(() => {
     const res = await fetch(`/.netlify/functions/ebay-feedback?limit=${DESIRED_COUNT}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw = await res.json();
-    if (!Array.isArray(raw)) throw new Error("Bad payload: expected array");
+    if (!Array.isArray(raw)) throw new Error("Bad payload");
 
-    // De-dupe + normalize
     const seen = new Set();
     const unique = [];
     for (const r of raw) {
@@ -32,26 +33,12 @@ setInterval(() => {
       const key = `${comment}::${user}::${date}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      unique.push({
-        comment, user, date,
-        rating: r.rating || "",
-        itemTitle: r.itemTitle || "",
-        itemID: r.itemID || ""
-      });
+      unique.push({ comment, user, date });
       if (unique.length >= DESIRED_COUNT) break;
     }
 
-    // Sort newest first if dates parse
-    unique.sort((a, b) => {
-      const da = Date.parse(a.date || "");
-      const db = Date.parse(b.date || "");
-      if (isNaN(da) && isNaN(db)) return 0;
-      if (isNaN(da)) return 1;
-      if (isNaN(db)) return -1;
-      return db - da;
-    });
+    unique.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 
-    // Build DOM
     const track = document.getElementById("jfTrack");
     const dotsContainer = document.getElementById("jfDots");
     const prev = document.getElementById("jfPrev");
@@ -59,44 +46,25 @@ setInterval(() => {
     if (!track || !dotsContainer || !prev || !next) return;
 
     track.innerHTML = "";
-    const formatter = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
-
     unique.forEach((review) => {
       const li = document.createElement("li");
       li.className = "jf-slide";
-
       const card = document.createElement("div");
       card.className = "jf-card";
-
       const pQuote = document.createElement("p");
       pQuote.className = "jf-quote";
       pQuote.textContent = `“${review.comment}”`;
-
       const pMeta = document.createElement("p");
       pMeta.className = "jf-meta";
-
-      const strong = document.createElement("strong");
-      strong.textContent = review.user || "eBay buyer";
-
-      const span = document.createElement("span");
-      let niceDate = review.date;
-      const parsed = Date.parse(review.date || "");
-      if (!isNaN(parsed)) niceDate = formatter.format(new Date(parsed));
-      span.textContent = niceDate ? ` · ${niceDate}` : "";
-
-      pMeta.appendChild(strong);
-      pMeta.appendChild(span);
-
+      pMeta.textContent = `${review.user} · ${review.date}`;
       card.appendChild(pQuote);
       card.appendChild(pMeta);
       li.appendChild(card);
       track.appendChild(li);
     });
 
-    // Slides list (this was missing)
     const slides = Array.from(track.children);
 
-    // Dots (cap to keep mobile tidy)
     const MAX_DOTS = 12;
     dotsContainer.innerHTML = "";
     slides.forEach((_, idx) => {
@@ -112,34 +80,15 @@ setInterval(() => {
     });
 
     let currentIndex = 0;
-
     function update() {
-      slides.forEach((slide, index) => {
-        slide.classList.toggle("is-active", index === currentIndex);
-      });
-      const dots = dotsContainer.querySelectorAll(".jf-dot");
-      dots.forEach((dot, index) => {
-        dot.classList.toggle("is-active", index === currentIndex);
-      });
+      slides.forEach((s, i) => s.classList.toggle("is-active", i === currentIndex));
+      dotsContainer.querySelectorAll(".jf-dot").forEach((d, i) =>
+        d.classList.toggle("is-active", i === currentIndex)
+      );
     }
-
-    prev.addEventListener("click", () => {
-      currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-      update();
-    });
-
-    next.addEventListener("click", () => {
-      currentIndex = (currentIndex + 1) % slides.length;
-      update();
-    });
-
-    if (slides.length > 1) {
-      setInterval(() => {
-        currentIndex = (currentIndex + 1) % slides.length;
-        update();
-      }, 5000);
-    }
-
+    prev.addEventListener("click", () => { currentIndex = (currentIndex - 1 + slides.length) % slides.length; update(); });
+    next.addEventListener("click", () => { currentIndex = (currentIndex + 1) % slides.length; update(); });
+    if (slides.length > 1) setInterval(() => { currentIndex = (currentIndex + 1) % slides.length; update(); }, 5000);
     update();
   } catch (err) {
     console.error("Error loading reviews:", err);
