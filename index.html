@@ -3,270 +3,41 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <title>Jo'MagicBackpack — Curious Finds · eBay Storefront</title>
-  <meta name="description" content="Jo'MagicBackpack — a menagerie of vintage and new finds. Explore recent eBay listings, hand-picked to outdo the ordinary.">
-
-  <link rel="icon" href="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png">
-  <link rel="preload" as="image" href="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png">
-
-  <style>
-    :root{
-      --bg:#05060a;--band:#0b0e15;--card:#0f1218;--text:#e6e7ea;--muted:#9aa3b2;
-      --accent:#7dd3fc;--accent-2:#c084fc;--ok:#34d399;
-      --radius-xl:1.25rem;--shadow:0 10px 30px rgba(0,0,0,.35);--shadow-soft:0 4px 18px rgba(0,0,0,.25)
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0;background:var(--bg);color:var(--text);
-      font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
-      -webkit-font-smoothing:antialiased
-    }
-    a{color:var(--accent)}
-    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
-      outline:none;box-shadow:0 0 0 4px rgba(125,211,252,.25);border-radius:12px
-    }
-    .hidden{display:none}
-    .container{max-width:1100px;margin:auto;padding:0 24px}
-    .header{position:sticky;top:0;z-index:50;background:rgba(5,6,10,.85);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.06)}
-    .nav{display:flex;align-items:center;gap:16px;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
-    .brand-logo{width:36px;height:36px;border-radius:10px;object-fit:cover;box-shadow:var(--shadow-soft)}
-    .brand-title{font-weight:700}
-    .badge{font-size:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));padding:4px 8px;border-radius:999px;color:#0a0c10;font-weight:700}
-    .controls{margin:16px 0;display:grid;gap:12px;grid-template-columns:1fr minmax(160px,220px) minmax(120px,160px) auto}
-    @media(max-width:820px){.controls{grid-template-columns:1fr 1fr}}
-    .input,.select,.button{width:100%;border:1px solid rgba(255,255,255,.08);background:var(--band);color:var(--text);padding:12px;border-radius:12px}
-    .button{cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0c10;font-weight:700;border:none}
-    .button.secondary{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.12)}
-    .hr{height:1px;background:rgba(255,255,255,.08);margin:22px 0}
-    .section{background:var(--band);border-radius:var(--radius-xl);padding:20px;box-shadow:var(--shadow-soft);border:1px solid rgba(255,255,255,.06)}
-    .kicker{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(125,211,252,.12);color:#bde7ff;font-weight:700;font-size:12px;border:1px solid rgba(125,211,252,.35)}
-    .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-xl);overflow:hidden;display:grid;box-shadow:var(--shadow)}
-    .thumb{position:relative;aspect-ratio:4/3;background:rgba(255,255,255,.03)}
-    .thumb img{width:100%;height:100%;object-fit:cover}
-    .condition{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 8px;border-radius:999px}
-    .card-body{padding:12px;display:grid;gap:6px}
-    .title{font-size:15px;font-weight:600}
-    .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
-    .price{font-size:18px;font-weight:800;color:#e9f8ff}
-    .card-actions{display:flex;gap:8px;padding:12px}
-    .card-actions a{flex:1;text-align:center;text-decoration:none;padding:10px;border-radius:12px;font-weight:700;border:1px solid rgba(255,255,255,.12)}
-    .view-btn{background:transparent;color:var(--text)}
-    .buy-btn{background:linear-gradient(135deg,var(--ok),#a7f3d0);color:#062312;border:none}
-    .skeleton{
-      background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.03),rgba(255,255,255,.06));
-      background-size:200% 100%;animation:shimmer 1.2s infinite linear;border-radius:12px
-    }
-    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .skel-card{height:280px}
-    .notice{padding:12px;border-radius:12px;background:rgba(248,113,113,.08);color:#ffe5e5}
-    .footer{color:var(--muted);padding:28px 0 40px;border-top:1px solid rgba(255,255,255,.08);text-align:center}
-  </style>
+  <title>Jo’Magic Backpack</title>
+  <meta name="description" content="Jo’Magic Backpack — a menagerie of vintage + new finds." />
+  <link rel="icon" href="./Assets/brand-logo.png?v=2" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <a class="visually-hidden" href="#listings">Skip to listings</a>
-
-  <header class="header">
-    <div class="container">
-      <nav class="nav">
-        <a class="brand" href="/">
-          <img class="brand-logo" src="Assets/B2DF5D37-DEB2-47EE-B5D9-ABAB912A4739.png" alt="Logo">
-          <div class="brand-title">Jo'MagicBackpack</div>
-          <span class="badge">Live</span>
+  <main class="wrap">
+    <section class="hero" aria-label="Brand header">
+      <img class="site-logo" src="./Assets/brand-logo.png?v=2" alt="Jo’Magic Backpack Logo" />
+      <p class="mission">Vintage, new, and unpredictable. If it sparks curiosity, it goes in the pack.</p>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="btn" href="/mission">Mission Statement</a>
+        <a class="btn" href="#reviews">Reviews</a>
+        <a class="btn" href="mailto:info@jomagicbackpack.com">Contact</a>
+        <a class="btn btn--primary" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener noreferrer">
+          <img class="ebay-logo" src="./Assets/IMG_0516.png?v=2" alt="eBay Logo" /> Visit the eBay Store
         </a>
-        <div style="margin-left:auto">
-          <a class="button secondary" href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">Visit eBay Store: Jo'MagicBackpack</a>
-        </div>
       </nav>
-
-      <div class="controls">
-        <input id="q" class="input" type="search" placeholder="Search items">
-        <select id="sort" class="select">
-          <option value="new">Newest</option>
-          <option value="price-desc">Price: High → Low</option>
-          <option value="price-asc">Price: Low → High</option>
-          <option value="end-asc">Ending Soonest</option>
-        </select>
-        <select id="limit" class="select">
-          <option>12</option><option>24</option><option>36</option><option>48</option>
-        </select>
-        <button id="refresh" class="button">Show Items</button>
-      </div>
-      <div class="hr"></div>
-
-      <section class="section container">
-        <p class="kicker">Store Ethos</p>
-        <p style="margin-top:.5rem;color:#d8e5ef;max-width:72ch">
-          At Jo'MagicBackpack, the mission is simple: keep wonder alive in everyday life.
-          Items are chosen to spark curiosity, outdo the ordinary, and prove that beauty doesn't come from sameness, but from variety.
-        </p>
-      </section>
-    </div>
-  </header>
-
-  <main id="listings" class="container" aria-live="polite">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px">
-      <p class="kicker">Recent Listings</p>
-      <div id="status" style="color:var(--muted);font-size:13px">Loading…</div>
-    </div>
-
-    <div id="errors" class="notice hidden"></div>
-
-    <div id="cards" class="cards">
-      <article class="card skel-card skeleton"></article><article class="card skel-card skeleton"></article>
-      <article class="card skel-card skeleton"></article><article class="card skel-card skeleton"></article>
-      <article class="card skel-card skeleton"></article><article class="card skel-card skeleton"></article>
-      <article class="card skel-card skeleton"></article><article class="card skel-card skeleton"></article>
-      <article class="card skel-card skeleton"></article><article class="card skel-card skeleton"></article>
-      <article class="card skel-card skeleton"></article><article class="card skel-card skeleton"></article>
-    </div>
-
-    <div style="display:flex;justify-content:center;margin:18px 0">
-      <button class="button secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">Back to Top</button>
-    </div>
-
-    <section class="footer">
-      <p>Maintained via Netlify. Visit <a href="https://ebay.us/m/xyWXiR" target="_blank" rel="noopener">Jo'MagicBackpack</a> on eBay.</p>
     </section>
+
+    <section id="about" class="band">
+      <h2 class="section-title">About Jo’Magic Backpack</h2>
+      <p>Jo’Magic Backpack is a traveling trove—vintage, new, and unpredictable. If it sparks curiosity, it goes in the pack.</p>
+    </section>
+
+    <section id="reviews" class="band">
+      <h2 class="section-title">What buyers are saying</h2>
+      <ul id="reviewList" class="list"></ul>
+    </section>
+
+    <footer>
+      <div>© <span id="y"></span> Jo’Magic Backpack</div>
+      <div>Site by Jo’Magic Backpack • Hosted on Netlify</div>
+    </footer>
   </main>
-
-  <script>
-    (function () {
-      const API = "/.netlify/functions/ebay-listings";
-      const el = {
-        q: document.getElementById("q"),
-        sort: document.getElementById("sort"),
-        limit: document.getElementById("limit"),
-        refresh: document.getElementById("refresh"),
-        cards: document.getElementById("cards"),
-        errors: document.getElementById("errors"),
-        status: document.getElementById("status"),
-      };
-
-      function setBusy(b) { el.status.textContent = b ? "Loading…" : "Ready"; }
-      function showError(msg) { el.errors.textContent = msg; el.errors.classList.remove("hidden"); }
-      function clearError() { el.errors.textContent = ""; el.errors.classList.add("hidden"); }
-
-      function skeletons(n = 12) {
-        el.cards.innerHTML = "";
-        for (let i = 0; i < n; i++) {
-          const sk = document.createElement("article");
-          sk.className = "card skel-card skeleton";
-          el.cards.appendChild(sk);
-        }
-      }
-
-      function priceText(p) {
-        if (p == null) return "";
-        const parts = String(p).trim().split(/\s+/);
-        const amount = parseFloat(parts.pop());
-        const currency = parts.pop() || "USD";
-        if (isNaN(amount)) return "";
-        return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
-      }
-
-      function card(it) {
-        const a = document.createElement("article");
-        a.className = "card";
-
-        const t = document.createElement("div");
-        t.className = "thumb";
-        const im = document.createElement("img");
-        im.loading = "lazy";
-        im.alt = it.title || "";
-        im.src = it.image || "";
-        t.appendChild(im);
-        if (it.condition) {
-          const cond = document.createElement("span");
-          cond.className = "condition";
-          cond.textContent = it.condition;
-          t.appendChild(cond);
-        }
-
-        const b = document.createElement("div");
-        b.className = "card-body";
-        const h = document.createElement("div");
-        h.className = "title";
-        h.textContent = it.title || "Untitled";
-        b.appendChild(h);
-
-        const m = document.createElement("div");
-        m.className = "meta";
-        const p = document.createElement("strong");
-        p.className = "price";
-        p.textContent = priceText(it.price);
-        m.appendChild(p);
-        b.appendChild(m);
-
-        const ac = document.createElement("div");
-        ac.className = "card-actions";
-        const v = document.createElement("a");
-        v.className = "view-btn";
-        v.href = it.url || "#";
-        v.target = "_blank";
-        v.rel = "noopener";
-        v.textContent = "View on eBay";
-        ac.appendChild(v);
-
-        const buy = document.createElement("a");
-        buy.className = "buy-btn";
-        buy.href = it.url || "#";
-        buy.target = "_blank";
-        buy.rel = "noopener";
-        buy.textContent = "Buy";
-        ac.appendChild(buy);
-
-        a.append(t, b, ac);
-        return a;
-      }
-
-      function extractItems(d) {
-        if (Array.isArray(d)) return d;
-        if (d && Array.isArray(d.items)) return d.items;
-        if (d && d.result && Array.isArray(d.result.items)) return d.result.items;
-        return [];
-      }
-
-      async function fetchItems() {
-        clearError();
-        setBusy(true);
-        skeletons(parseInt(el.limit.value, 10) || 12);
-        try {
-          const qs = new URLSearchParams({
-            q: el.q.value || "",
-            limit: el.limit.value || "12",
-            sort: el.sort.value || "new",
-          });
-          const r = await fetch(`${API}?${qs.toString()}`, { cache: "no-store" });
-          if (!r.ok) throw new Error(`Network error (${r.status})`);
-          const d = await r.json();
-          const items = extractItems(d);
-
-          el.cards.innerHTML = "";
-          if (items.length === 0) {
-            const n = document.createElement("div");
-            n.className = "notice";
-            n.textContent = "No items to display yet.";
-            el.cards.appendChild(n);
-          } else {
-            items.forEach(it => el.cards.appendChild(card(it)));
-          }
-          el.status.textContent = `Showing ${items.length} item${items.length === 1 ? "" : "s"}`;
-        } catch (e) {
-          showError(e.message || "Could not load listings.");
-          console.error(e);
-        } finally {
-          setBusy(false);
-        }
-      }
-
-      el.refresh.addEventListener("click", fetchItems);
-      fetchItems();
-    })();
-  </script>
+  <script defer src="./scripts.js"></script>
 </body>
 </html>
